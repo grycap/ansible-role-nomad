@@ -1,0 +1,13 @@
+---
+- name: Download nomad files
+  get_url: url=https://releases.hashicorp.com/nomad/0.6.3/nomad_0.6.3_linux_amd64.zip dest=/tmp/nomad_0.6.3_linux_amd64.zip
+  register: result
+  until: result|success
+  retries: 5
+  delay: 1
+
+- name: Decompress files
+  unarchive: src=/tmp/nomad_0.6.3_linux_amd64.zip dest=/tmp/nomad copy=no creates=/tmp/nomad/nomad
+
+- name: Include "{{nomad_type_of_node}}" nomad recipe
+  include: "{{nomad_type_of_node}}.yml"

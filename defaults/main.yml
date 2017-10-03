@@ -1,0 +1,6 @@
+---
+# Type of node to install: front or wn
+nomad_type_of_node: "front"
+nomad_ssh_user: "grycap"
+vnode_prefix: "wn"
+nomad_server_ip: "127.0.0.1"
