@@ -7,7 +7,8 @@
   delay: 1
 
 - name: Decompress files
-  unarchive: src=/tmp/nomad_0.6.3_linux_amd64.zip dest=/tmp/nomad copy=no creates=/tmp/nomad/nomad
+  file: path=/tmp/nomad state=directory
+- unarchive: src=/tmp/nomad_0.6.3_linux_amd64.zip dest=/tmp/nomad copy=no creates=/tmp/nomad/nomad
 
 - name: Include "{{nomad_type_of_node}}" nomad recipe
   include: "{{nomad_type_of_node}}.yml"
