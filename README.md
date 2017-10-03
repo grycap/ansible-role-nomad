@@ -3,7 +3,7 @@
 Nomad server/client Role
 =======================
 
-Installs Hashicorp Nomad server/client (recipe for EC3).
+Installs Hashicorp Nomad server/client (recipe for EC3). No Docker neither consul are installed because they are not essential. If you want to install these software, use the appropiate rol.
 
 Role Variables
 --------------
