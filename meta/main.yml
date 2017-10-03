@@ -16,6 +16,4 @@ galaxy_info:
    - nomad
    - hashicorp
 
-dependencies:
-  - { role: 'grycap.docker' }
-  - { role: 'grycap.consul' }
+dependencies: []
