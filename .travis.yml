@@ -32,7 +32,7 @@ script:
   - 'docker run --detach --volume="${PWD}":/etc/ansible/roles/role_under_test:ro ${run_opts} grycap/travis:${distro} "${init}" > "${container_id}"'
 
   # install dependencies
-  - 'docker exec "$(cat ${container_id})" ansible-galaxy install grycap.docker grycap.consul'
+  #- 'docker exec "$(cat ${container_id})" ansible-galaxy install grycap.docker grycap.consul'
 
   # Ansible syntax check.
   - 'docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook /etc/ansible/roles/role_under_test/tests/test.yml --syntax-check'
