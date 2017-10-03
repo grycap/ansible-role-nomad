@@ -1,4 +1,7 @@
 ---
+- name: Include "{{ansible_os_family}}" Nomad recipe
+  include: "{{ansible_os_family}}.yaml"
+  
 - name: Download nomad files
   get_url: url=https://releases.hashicorp.com/nomad/0.6.3/nomad_0.6.3_linux_amd64.zip dest=/tmp/nomad_0.6.3_linux_amd64.zip
   register: result
