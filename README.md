@@ -1,38 +1,51 @@
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Build Status](https://travis-ci.org/grycap/ansible-role-nomad.svg?branch=master)](https://travis-ci.org/grycap/ansible-role-nomad)
-Nomad server/client Role
-=======================
 
-Installs Hashicorp Nomad server/client (recipe for EC3). No Docker neither consul are installed because they are not essential. If you want to install these software, use the appropiate rol.
+Ansible Role - Nomad agent 
+=========
+
+It provides a totally customizable Ansible role for the installation of Nomad. If the variable ```create_nomad_service``` is ```true```, this role creates a Linux service.  
 
 Role Variables
 --------------
 
-The variables that can be passed to this role and a brief description about them are as follows.
-
-	# Type of node to install: front or wn
-	nomad_type_of_node: front
-	# Server IP
-	nomad_server_ip: "127.0.0.1"
+The variables used for the installation and configuration are described in defaults/main file. 
 
 Example Playbook
 ----------------
-```
-  - hosts: server
-  roles:
-  - { role: 'grycap.nomad', nomad_type_of_node: 'front', nomad_server_ip: '{{ansible_default_ipv4}}'}
-```
-```
-  - hosts: client
-  roles:
-  - { role: 'grycap.nomad', nomad_type_of_node: 'wn' }
+
+Deployment of client and server with Consul enabled (and available at 172.17.0.2):
+``` yml
+    - hosts: servers
+      vars:
+        name: server 
+        nomad_user: nomad
+        nomad_group: nomad
+        bind_address: "172.17.0.3"
+        server_enabled: true
+        client_enabled: false
+        use_consul: true
+        consul_address: "172.17.0.2:8500"
+        create_nomad_service: true
+      roles:
+         - { role: grycap.nomad }
+
+    - hosts: clients
+      vars:
+        name: server 
+        nomad_user: nomad
+        nomad_group: nomad
+        bind_address: "172.17.0.4"
+        server_enabled: false
+        client_enabled: true
+        use_consul: true
+        consul_address: "172.17.0.2:8500"
+        create_nomad_service: true
+      roles:
+         - { role: grycap.nomad }
 ```
 
-Contributing to the role
-========================
-In order to keep the code clean, pushing changes to the master branch has been disabled. If you want to contribute, you have to create a branch, upload your changes and then create a pull request.  
-Thanks
+License
+-------
 
-# ansible-role-nomad
-Ansible role for Nomad Hashicorp installation
-
+Apache 2.0

@@ -1,0 +1,11 @@
+- name: Add Nomad group
+  group:
+    name: "{{ nomad_group }}"
+    state: present
+
+- name: Add Nomad user
+  user:
+    name: "{{ nomad_user }}"
+    comment: "Nomad user"
+    group: "{{ nomad_group }}"
+    system: yes

@@ -1,0 +1,55 @@
+
+name = "{{ name }}"
+region = "{{ region }}"
+bind_addr = "{{ bind_address }}"
+datacenter = "{{ datacenter }}"
+data_dir = "{{ nomad_data_dir }}"
+disable_update_check = {{ disable_update_check | bool | lower }}
+disable_anonymous_signature = {{ disable_anonymous_signature | bool | lower }}
+enable_debug = {{ enable_debug| bool | lower }}
+leave_on_interrupt = {{ leave_on_interrupt | bool | lower }}
+enable_syslog = {{ enable_syslog | bool | lower }}
+log_level = "{{ log_level }}"
+syslog_facility = "{{ syslog_facility }}"
+
+ports {
+  http = {{ nomad_ports['http'] }}
+  rpc = {{ nomad_ports['rpc'] }}
+  serf = {{ nomad_ports['serf'] }}
+}
+
+{% if use_addresses == True %}
+
+addresses {
+  http = "{{ nomad_addresses['http'] }}"
+  rpc = "{{ nomad_addresses['rpc'] }}"
+  serf = "{{ nomad_addresses['rpc'] }}"
+}
+{% endif %}
+
+{% if use_advertise == True %}
+
+advertise {
+  http = "{{ nomad_advertise['http'] }}"
+  rpc = "{{ nomad_advertise['rpc'] }}"
+  serf = "{{ nomad_advertise['rpc'] }}"
+}
+{% endif %}
+
+
+{% if acl_enabled == True %}
+acl {
+    {%- for key, value in acl_conf.items() %} 
+    {%- if value|string or value == "" %}  
+    {{ key }} = "{{ value }}"
+    {%- else %}
+    {%- if value|bool or value == "" %}  
+    {{ key }} = {{ value | bool | lower }}  
+    {%- else %}
+    {{ key }} = {{ value }} 
+    {%- endif -%}
+    {%- endif -%}
+    {%- endfor %}
+
+}
+{% endif %}

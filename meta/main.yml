@@ -1,19 +1,19 @@
 galaxy_info:
-  author: amcaar@i3m.upv.es
-  description: Install Nomad components
+  author: serlohu@upv.es, amcaar@i3m.upv.es
+  description: Installs Nomad
   company: GRyCAP UPV
-  license: Apache
+  license: Apache 
   min_ansible_version: 2.0
+
   platforms:
-  - name: Ubuntu
-    versions:
-    - trusty
-    - xenial
   - name: EL
     versions:
     - 7
+  - name: Ubuntu
+  versions:
+  - xenial  
   galaxy_tags:
-   - nomad
-   - hashicorp
+    - nomad
+    - hashicorp
 
-dependencies: []
+dependencies: []   

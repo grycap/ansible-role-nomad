@@ -1,0 +1,19 @@
+[Unit]
+Description=Nomad Service
+Documentation=https://www.nomadproject.io/docs/index.html  
+Wants=basic.target
+After=basic.target network.target
+
+[Service]
+Type=simple
+PIDFile=/var/run/nomad.pid
+User={{ nomad_user }}
+Group={{ nomad_group }}
+ExecStart=/bin/bash -c '{{ nomad_installation_dir }}/nomad agent -config={{ nomad_config_dir }} >{{ nomad_log_dir }}/nomad.log 2>{{ nomad_log_dir }}/nomad.error.log' 
+ExecStop=/usr/bin/pkill -P $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=60s
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,26 @@
+telemetry {
+
+    #  Telemetry provider parameters
+    {%- for key, value in telemetry_provider_parameters.items() %} 
+    {%- if value|string or value == "" %}  
+    {{ key }} = "{{ value }}"
+    {%- else %}
+    {%- if value|bool %}  
+    {{ key }} = {{ value | bool | lower }}  
+    {%- else %}
+    {{ key }} = {{ value }} 
+    {%- endif -%}
+    {%- endif -%}
+    {%- endfor %}
+
+
+    # Common parameters
+    disable_hostname = {{ disable_hostname | bool | lower }}
+    collection_interval = "{{ collection_interval }}"
+    use_node_name = {{ use_node_name | bool | lower }}
+    publish_allocation_metrics = {{ publish_allocation_metrics | bool | lower }}
+    publish_node_metrics = {{ publish_node_metrics | bool | lower }}
+    backwards_compatible_metrics = {{ backwards_compatible_metrics | bool | lower }}
+    disable_tagged_metrics = {{ disable_tagged_metrics| bool | lower  }}
+
+}  

@@ -1,0 +1,11 @@
+tls {
+
+    ca_file = "{{ tls_ca_file }}"
+    cert_file = "{{ tls_cert_file }}"
+    key_file = "{{ tls_key_file }}"
+    http = {{ tls_http | bool | lower }}
+    rpc = {{ tls_rpc | bool | lower }}
+    verify_https_client = {{ tls_verify_https_client | bool | lower }}
+    verify_server_hostname = {{ tls_verify_server_hostname | bool | lower }}
+
+}

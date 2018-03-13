@@ -1,6 +1,201 @@
 ---
-# Type of node to install: front or wn
-nomad_type_of_node: "front"
-nomad_ssh_user: "grycap"
-vnode_prefix: "wn"
-nomad_server_ip: "127.0.0.1"
+# Installation vars
+nomad_version: 0.7.0
+nomad_user: nomad
+nomad_group: nomad
+use_nomad_ui: false
+create_nomad_service: true
+# --------------------------------------------------------------------------------------------------------------------------------------- #
+# Directories
+nomad_installation_dir: /usr/bin
+nomad_log_dir: /var/log/nomad
+nomad_config_dir: /etc/nomad
+# --------------------------------------------------------------------------------------------------------------------------------------- #
+# START - Base configuration 
+name: "default_name" #(string: [hostname]) - Specifies the name of the local node. This value is used to identify individual nodes in a given datacenter and must be unique per-datacenter.
+use_addresses: false
+nomad_addresses: # Specifies the bind address for individual network services. Any values configured in this stanza take precedence over the default bind_addr.  
+  http: "127.0.0.1" # The address the HTTP server is bound to. This is the most common bind address to change.
+  rpc: "127.0.0.1" # The address to bind the internal RPC interfaces to. Should be exposed only to other cluster members if possible.
+  serf: "127.0.0.1" # The address used to bind the gossip layer to. Both a TCP and UDP listener will be exposed on this address. Should be exposed only to other cluster members if possible.
+use_advertise: false
+nomad_advertise: # Specifies the advertise address for individual network services. This can be used to advertise a different address to the peers of a server or a client node to support more complex network configurations such as NAT. This configuration is optional, and defaults to the bind address of the specific network service if it is not provided. Any values configured in this stanza take precedence over the default bind_addr. If the bind address is 0.0.0.0 then the first private IP found is advertised. You may advertise an alternate port as well. 
+  http: "127.0.0.1" # The address to advertise for the HTTP interface. This should be reachable by all the nodes from which end users are going to use the Nomad CLI tools.
+  rpc: "127.0.0.1" # The address to advertise for the RPC interface. This address should be reachable by all of the agents in the cluster.
+  serf: "127.0.0.1" # The address advertised for the gossip layer. This address must be reachable from all server nodes. It is not required that clients can reach this address.
+bind_address: "172.17.0.4" # Specifies which address the Nomad agent should bind to for network services, including the HTTP interface as well as the internal gossip protocol and RPC mechanism. This should be specified in IP format, and can be used to easily bind all network services to the same address. It is also possible to bind the individual services to different addresses using the addresses configuration option. Dev mode (-dev) defaults to localhost.
+datacenter: "dc1" # Specifies the data center of the local agent. All members of a datacenter should share a local LAN connection.
+nomad_data_dir: "/opt/nomad" #  Specifies a local directory used to store agent state. Client nodes use this directory by default to store temporary allocation data as well as cluster information. Server nodes use this directory to store cluster state, including the replicated log and snapshot data. This must be specified as an absolute path.
+disable_anonymous_signature: false # Specifies if Nomad should provide an anonymous signature for de-duplication with the update check.
+disable_update_check: false # Specifies if Nomad should not check for updates and security bulletins.
+enable_debug: false # Specifies if the debugging HTTP endpoints should be enabled. These endpoints can be used with profiling tools to dump diagnostic information about Nomad's internals.
+enable_syslog: false # Specifies if the agent should log to syslog. This option only works on Unix based systems.
+leave_on_interrupt: false #(bool: false) - Specifies if the agent should gracefully leave when receiving the interrupt signal. By default, the agent will exit forcefully on any signal.
+leave_on_terminate: false #(bool: false) - Specifies if the agent should gracefully leave when receiving the terminate signal. By default, the agent will exit forcefully on any signal.
+log_level: "INFO" #(string: "INFO") - Specifies the verbosity of logs the Nomad agent will output. Valid log levels include WARN, INFO, or DEBUG in increasing order of verbosity.
+nomad_ports: # Specifies the network ports used for different services required by the Nomad agent.
+  http: 4646 # The port used to run the HTTP server.
+  rpc: 4647 # The port used for internal RPC communication between agents and servers, and for inter-server traffic for the consensus algorithm (raft).
+  serf: 4648 # The port used for the gossip protocol for cluster membership. Both TCP and UDP should be routable between the server nodes on this port.
+region: "global" #(string: "global") - Specifies the region the Nomad agent is a member of. A region typically maps to a geographic region, for example us, with potentially multiple zones, which map to datacenters such as us-west and us-east.
+syslog_facility: "LOCAL0" #(string: "LOCAL0") - Specifies the syslog facility to write to. This has no effect unless enable_syslog is true.
+acl_enabled: false # The acl stanza configures the Nomad agent to enable ACLs and tunes various ACL parameters.
+acl_conf:
+  enabled: "{{ acl_enabled }}" #(bool: false) - Specifies if ACL enforcement is enabled. All other client configuration options depend on this value.
+  token_ttl: "30s" # (string: "30s") - Specifies the maximum time-to-live (TTL) for cached ACL tokens. This does not affect servers, since they do not cache tokens. Setting this value lower reduces how stale a token can be, but increases the request load against servers. If a client cannot reach a server, for example because of an outage, the TTL will be ignored and the cached value used.
+  policy_ttl: "30s" #(string: "30s") - Specifies the maximum time-to-live (TTL) for cached ACL policies. This does not affect servers, since they do not cache policies. Setting this value lower reduces how stale a policy can be, but increases the request load against servers. If a client cannot reach a server, for example because of an outage, the TTL will be ignored and the cached value used.
+  replication_token: "" #(string: "") - Specifies the Secret ID of the ACL token to use for replicating policies and tokens. This is used by servers in non-authoritative region to mirror the policies and tokens into the local region.
+
+# END - Base configuration
+# --------------------------------------------------------------------------------------------------------------------------------------- #
+# START - Telemetry configuration
+use_telemetry: false
+# Common configuration 
+disable_hostname: false # (bool: false) - Specifies if gauge values should be prefixed with the local hostname.
+collection_interval: 60s #(duration: 1s) - Specifies the time interval at which the Nomad agent collects telemetry data.
+use_node_name: false #(bool: false) - Specifies if gauge values should be prefixed with the name of the node, instead of the hostname. If set it will override disable_hostname value.
+publish_allocation_metrics: false # (bool: false) - Specifies if Nomad should publish runtime metrics of allocations.
+publish_node_metrics: false # (bool: false) - Specifies if Nomad should publish runtime metrics of nodes.
+backwards_compatible_metrics: false #(bool: false) - Specifies if Nomad should publish metrics that are backwards compatible with versions below 0.7, as post version 0.7, Nomad emits tagged metrics. All new metrics will only be added to tagged metrics. Note that this option is used to transition monitoring to tagged metrics and will eventually be deprecated.
+disable_tagged_metrics: false #(bool: false) - Specifies if Nomad should not emit tagged metrics and only emit metrics compatible with versions below Nomad 0.7. Note that this option is used to transition monitoring to tagged metrics and will eventually be deprecated.
+
+# Map of variables of the specific telemetry provider. The keys of the map must correspond with the necessary parameters for each telemetry provider (https://www.nomadproject.io/docs/agent/configuration/telemetry.html). The next example contains the parameters for Prometheus.
+telemetry_provider_parameters:
+  prometheus_metrics: false #(bool: false) - Specifies whether the agent should make Prometheus formatted metrics available at /v1/metrics?format=prometheus.
+# END - Telemetry configuration
+
+# START - Server configuration
+servers_group_name: servers
+server_authoritative_region: "" #  Specifies the authoritative region, which provides a single source of truth for global configurations such as ACL Policies and global ACL tokens. Non-authoritative regions will replicate from the authoritative to act as a mirror. By default, the local region is assumed to be authoritative.
+server_enabled: false # Specifies if this agent should run in server mode
+server_bootstrap_expect: 1 # (int: required) - Specifies the number of server nodes to wait for before bootstrapping. It is most common to use the odd-numbered integers 3 or 5 for this value, depending on the cluster size. A value of 1 does not provide any fault tolerance and is not recommended for production use cases.
+server_nomad_data_dir: "{{ nomad_data_dir }}/server" #(string: "[data_dir]/server") - Specifies the directory to use - for server-specific data, including the replicated log. By default, this is - the top-level data_dir suffixed with "server", like "/opt/nomad/server". This must be an absolute path.
+server_enabled_schedulers: #(array<string>: [all]) Specifies which sub-schedulers this server will handle. This can be used to restrict the evaluations that worker threads will dequeue for processing.
+  - service
+  - batch
+  - system
+server_encrypt: "" #(string: "") - Specifies the secret key to use for encryption of Nomad server's gossip network traffic. This key must be 16 bytes that are base64-encoded. The provided key is automatically persisted to the data directory and loaded automatically whenever the agent is restarted.
+server_node_gc_threshold: "1h" #(string: "24h") - Specifies how long a node must be in a terminal state before it is garbage collected and purged from the system. This is specified using a label suffix like "30s" or "1h".
+server_job_gc_threshold: "1h" # (string: "4h") - Specifies the minimum time a job must be in the terminal state before it is eligible for garbage collection. This is specified using a label suffix like "30s" or "1h".
+server_eval_gc_threshold: "1h" #(string: "1h") - Specifies the minimum time an evaluation must be in the terminal state before it is eligible for garbage collection. This is specified using a label suffix like "30s" or "1h".
+server_deployment_gc_threshold: "1h" #(string: "1h") - Specifies the minimum time a deployment must be in the terminal state before it is eligible for garbage collection. This is specified using a label suffix like "30s" or "1h".
+server_heartbeat_grace: "30s" # (string: "10s") - Specifies the additional time given as a grace period beyond the heartbeat TTL of nodes to account for network and processing delays as well as clock skew. This is specified using a label suffix like "30s" or "1h".
+server_min_heartbeat_ttl: "1m" #(string: "10s") - Specifies the minimum time between node heartbeats. This is used as a floor to prevent excessive updates. This is specified using a label suffix like "30s" or "1h". Lowering the minimum TTL is a tradeoff as it lowers failure detection time of nodes at the tradeoff of false positives and increased load on the leader.
+server_max_heartbeats_per_second: 50.0 #(float: 50.0) - Specifies the maximum target rate of heartbeats being processed per second. This allows the TTL to be increased to meet the target rate. Increasing the maximum heartbeats per second is a tradeoff as it lowers failure detection time of nodes at the tradeoff of false positives and increased load on the leader.
+server_num_schedulers: 1 #(int: [num-cores]) - Specifies the number of parallel scheduler threads to run. This can be as many as one per core, or 0 to disallow this server from making any scheduling decisions. This defaults to the number of CPU cores.
+#server_protocol_version: 1 #(int: 1) - Specifies the Nomad protocol version to use when communicating with other Nomad servers. This value is typically not required as the agent internally knows the latest version, but may be useful in some upgrade scenarios.
+server_rejoin_after_leave: false #(bool: false) - Specifies if Nomad will ignore a previous leave and attempt to rejoin the cluster when starting. By default, Nomad treats leave as a permanent intent and does not attempt to join the cluster again when starting. This flag allows the previous state to be used to rejoin the cluster.
+
+# If use_consul is true, these variables are not used
+server_start_join: false 
+server_start_join_servers: [] #(array<string>: []) - Specifies a list of server addresses to join on startup. If Nomad is unable to join with any of the specified addresses, agent startup will fail. See the server address format section for more information on the format of the string.
+#  - "1.1.1.1"
+#  - "1.1.1.1"
+server_retry_join: false 
+server_retry_join_servers: [] #(array<string>: []) - Specifies a list of server addresses to retry joining if the first attempt fails. This is similar to start_join, but only invokes if the initial join attempt fails. The list of addresses will be tried in the order specified, until one succeeds. After one succeeds, no further addresses will be contacted. This is useful for cases where we know the address will become available eventually. Use retry_join with an array as a replacement for start_join, do not use both options. See the server address format section for more information on the format of the string.
+#  - "2.2.2.2"
+#  - "2.2.2.2"
+server_retry_interval: "30s" #(string: "30s") - Specifies the time to wait between retry join attempts.
+server_retry_max: 20 #(int: 0) - Specifies the maximum number of join attempts to be made before exiting with a return code of 1. By default, this is set to 0 which is interpreted as infinite retries.
+# END - Server configuration
+# --------------------------------------------------------------------------------------------------------------------------------------- #
+# START - Client configuration
+clients_group_name: clients
+client_alloc_dir: "{{ nomad_data_dir }}/alloc" #(string: "[data_dir]/alloc") - Specifies the directory to use for allocation data. By default, this is the top-level data_dir suffixed with "alloc", like "/opt/nomad/alloc". This must be an absolute path
+client_enabled: true #(bool: false) - Specifies if client mode is enabled. All other client configuration options depend on this value.
+client_max_kill_timeout: "30s" #(string: "30s") - Specifies the maximum amount of time a job is allowed to wait to exit. Individual jobs may customize their own kill timeout, but it may not exceed this value.
+client_network_interface: "lo" #(string: "lo | lo0") - Specifies the name of the interface to force network fingerprinting on. This defaults to the loopback interface. All addresses on the interface are fingerprinted except the ones which are scoped local for IPv6. When allocating ports for tasks, the scheduler will choose from the IPs of the fingerprinted interface.
+client_node_class: "" #(string: "") - Specifies an arbitrary string used to logically group client nodes by user-defined class. This can be used during job placement as a filter.
+client_state_dir: "{{ nomad_data_dir }}/client" #(string: "[data_dir]/client") - Specifies the directory to use to store client state. By default, this is - the top-level data_dir suffixed with "client", like "/opt/nomad/client". This must be an absolute path.
+client_gc_interval: "5m" #(string: "1m") - Specifies the interval at which Nomad attempts to garbage collect terminal allocation directories.
+client_gc_disk_usage_threshold: 80 #(float: 80) - Specifies the disk usage percent which Nomad tries to maintain by garbage collecting terminal allocations.
+client_gc_inode_usage_threshold: 70 #(float: 70) - Specifies the inode usage percent which Nomad tries to maintain by garbage collecting terminal allocations.
+client_gc_max_allocs: 50 #(int: 50) - Specifies the maximum number of allocations which a client will track before triggering a garbage collection of terminal allocations. This will not limit the number of allocations a node can run at a time, however after gc_max_allocs every new allocation will cause terminal allocations to be GC'd.
+client_gc_parallel_destroys: 2 #(int: 2) - Specifies the maximum number of parallel destroys allowed by the garbage collector. This value should be relatively low to avoid high resource usage during garbage collections.
+client_no_host_uuid: true #(bool: true) - By default a random node UUID will be generated, but setting this to false will use the system's UUID. Before Nomad 0.6 the default was to use the system UUID.
+
+use_client_reserved: true # Includes reserved variable to client.hcl. The user can comment 
+client_reserved: #Specifies that Nomad should reserve a portion of the node's resources from receiving tasks. This can be used to target a certain capacity usage for the node. For example, 20% of the node's CPU could be reserved to target a CPU utilization of 80%.
+  cpu: 500               #(int: 0) - Specifies the amount of CPU to reserve, in MHz.
+  memory: 512               #(int: 0) - Specifies the amount of memory to reserve, in MB.
+  disk: 1024               #(int: 0) - Specifies the amount of disk to reserve, in MB. 
+  reserved_ports: "22,80,8500-8600"               #(string: "") - Specifies a comma-separated list of ports to reserve on all fingerprinted network devices. Ranges can be specified by using a hyphen separated the two inclusive ends.
+
+use_client_meta: true
+client_meta: {} #(map[string]string: nil) - Specifies a key-value map that annotates with user-defined metadata.
+  
+
+use_client_options: false
+client_options: {} #(Options: nil) - Specifies a key-value mapping of internal configuration for clients, such as for driver configuration.
+
+
+use_chroot_env: true
+chroot_env: # Drivers based on isolated fork/exec implement file system isolation using chroot on Linux. The chroot_env map allows the chroot environment to be configured using source paths on the host operating system.
+  /bin: "/bin"
+  /etc: "/etc"
+  /lib: "/lib"
+  /lib64: "/lib64"
+  /run/resolvconf: "/run/resolvconf"
+  /sbin: "/sbin"
+  /usr: "/usr"
+
+# The following parameters is necessary when use_consul is false
+client_servers_to_join: [] #(array<string>: []) - Specifies an array of addresses to the Nomad servers this client should join. This list is used to register the client with the server nodes and advertise the available resources so that the agent can receive work. This may be specified as an IP address or DNS, with or without the port. If the port is omitted, the default port of 4647 is used.
+
+
+# END - Client configuration
+# --------------------------------------------------------------------------------------------------------------------------------------- #
+# START - Consul configuration
+use_consul: true
+consul_address: "172.17.0.2:8500" #(string: "127.0.0.1:8500") - Specifies the address to the local Consul agent, given in the format host:port. Supports Unix sockets with the format: unix:///tmp/consul/consul.sock
+consul_auth: "" #(string: "") - Specifies the HTTP Basic Authentication information to use for access to the Consul Agent, given in the format username:password.
+consul_auto_advertise: true #(bool: true) - Specifies if Nomad should advertise its services in Consul. The services are named according to server_service_name and client_service_name. Nomad servers and clients advertise their respective services, each tagged appropriately with either http or rpc tag. Nomad servers also advertise a serf tagged service.
+
+consul_checks_use_advertise: false #(bool: false) - Specifies if Consul health checks should bind to the advertise address. By default, this is the bind address.
+
+consul_server_service_name: "nomad" #(string: "nomad") - Specifies the name of the service in Consul for the Nomad servers.
+consul_client_service_name: "nomad-client" #(string: "nomad-client") - Specifies the name of the service in Consul for the Nomad clients.
+consul_ca_file: "" #(string: "") - Specifies an optional path to the CA certificate used for Consul communication. This defaults to the system bundle if unspecified.
+consul_cert_file: "" #(string: "") - Specifies the path to the certificate used for Consul communication. If this is set then you need to also set key_file.
+consul_key_file: ""  #(string: "") - Specifies the path to the private key used for Consul communication. If this is set then you need to also set cert_file.
+consul_server_auto_join: true #(bool: true) - Specifies if the Nomad servers should automatically discover and join other Nomad servers by searching for the Consul service name defined in the server_service_name option. This search only happens if the server does not have a leader.
+consul_client_auto_join: true #(bool: true) - Specifies if the Nomad clients should automatically discover servers in the same region by searching for the Consul service name defined in the server_service_name option. The search occurs if the client is not registered with any servers or it is unable to heartbeat to the leader of the region, in which case it may be partitioned and searches for other servers.
+consul_ssl: false #(bool: false) - Specifies if the transport scheme should use HTTPS to communicate with the Consul agent.
+consul_verify_ssl: true #(bool: true)- Specifies if SSL peer verification should be used when communicating to the Consul API client over HTTPS
+
+consul_ACL_token_set: false # If true, the variable "token" (the following variable) is added to Consul stanza in Nomad configuration.
+consul_token: "consult_token_default" #(string: "") - Specifies the token used to provide a per-request ACL token. This option overrides the Consul Agent's default token.
+# END - Consul configuration
+# --------------------------------------------------------------------------------------------------------------------------------------- #
+# START - Vault configuration
+vault_address: "https://vault.service.consul:8200" #(string: "https://vault.service.consul:8200") - Specifies the address to the Vault server. This must include the protocol, host/ip, and port given in the format protocol://host:port. If your Vault installation is behind a load balancer, this should be the address of the load balancer.
+vault_allow_unauthenticated: true #(bool: true) - Specifies if users submitting jobs to the Nomad server should be required to provide their own Vault token, proving they have access to the policies listed in the job. This option should be disabled in an untrusted environment.
+vault_enabled: false #(bool: false) - Specifies if the Vault integration should be activated.
+vault_create_from_role: "" #(string: "") - Specifies the role to create tokens from. The token given to Nomad does not have to be created from this role but must have "update" capability on "auth/token/create/" path in Vault. If this value is unset and the token is created from a role, the value is defaulted to the role the token is from. This is largely for backwards compatibility. It is recommended to set the create_from_role field if Nomad is deriving child tokens from a role.
+vault_task_token_ttl: "" #(string: "") - Specifies the TTL of created tokens when using a root token. This is specified using a label suffix like "30s" or "1h".
+vault_ca_file: "" #(string: "") - Specifies an optional path to the CA certificate used for Vault communication. If unspecified, this will fallback to the default system CA bundle, which varies by OS and version.
+vault_ca_path: "" # (string: "") - Specifies an optional path to a folder containing CA certificates to be used for Vault communication. If unspecified, this will fallback to the default system CA bundle, which varies by OS and version.
+vault_cert_file: "" # (string: "") - Specifies the path to the certificate used for Vault communication. If this is set then you need to also set tls_key_file.
+vault_key_file: "" # (string: "") - Specifies the path to the private key used for Vault communication. If this is set then you need to also set tls_cert_file.
+vault_tls_server_name: "" # (string: "") - Specifies an optional string used to set the SNI host when connecting to Vault via TLS.
+vault_tls_skip_verify: false # (bool: false) - Specifies if SSL peer validation should be enforced. It is strongly discouraged to disable SSL verification. Instead, you should install a custom CA bundle and validate against it. Disabling SSL verification can allow an attacker to easily compromise your cluster.
+vault_token: "vaul_token_default" # (string: "") - Specifies the parent Vault token to use to derive child tokens for jobs requesting tokens. Visit the Vault Integration documentation to see how to generate an appropriate token in Vault.
+# END - Vault configuration
+# --------------------------------------------------------------------------------------------------------------------------------------- #
+# START - TLS  configuration
+use_tls: false
+tls_ca_file: "" #(string: "") - Specifies the path to the CA certificate to use for Nomad's TLS communication.
+tls_cert_file: "" # (string: "") - Specifies the path to the certificate file used for Nomad's TLS communication.
+tls_key_file: "" # (string: "") - Specifies the path to the key file to use for Nomad's TLS communication.
+tls_http: false # (bool: false) - Specifies if TLS should be enabled on the HTTP endpoints on the Nomad agent, including the API.
+tls_rpc: false # (bool: false) - Specifies if TLS should be enabled on the RPC endpoints and Raft traffic between the Nomad servers. Enabling this on a Nomad client makes the client use TLS for making RPC requests to the Nomad servers.
+tls_verify_https_client: false # (bool: false) - Specifies agents should require client certificates for all incoming HTTPS requests. The client certificates must be signed by the same CA as Nomad.
+tls_verify_server_hostname: false # (bool: false) - Specifies if outgoing TLS connections should verify the server's hostname.
+# END - TLS configuration
+# --------------------------------------------------------------------------------------------------------------------------------------- #
+# START - Sentinel configuration
+use_sentinel: false
+sentinel_imports:
+ "custom-import": { path: "/tmp", args: ["arg1", "arg2"] }
+
+# END - Sentinel configuration

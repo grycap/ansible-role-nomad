@@ -1,17 +1,34 @@
 ---
-- name: Include "{{ansible_os_family}}" Nomad recipe
-  include: "{{ansible_os_family}}.yaml"
+- name: "Checks system"
+  include: checks.yml
+
+- name: "Create facts"
+  set_fact: 
+    nomad_hostname: "{{ ansible_hostname }}"
+
+- name: "Creating user and group"
+  include: create_user.yml
   
-- name: Download nomad files
-  get_url: url=https://releases.hashicorp.com/nomad/0.6.3/nomad_0.6.3_linux_amd64.zip dest=/tmp/nomad_0.6.3_linux_amd64.zip
-  register: result
-  until: result|success
-  retries: 5
-  delay: 1
+- name: "Install role requeriments"
+  include: requeriments.yml
 
-- name: Decompress files
-  file: path=/tmp/nomad state=directory
-- unarchive: src=/tmp/nomad_0.6.3_linux_amd64.zip dest=/tmp/nomad copy=no creates=/tmp/nomad/nomad
+- name: "Install Nomad"
+  include: install.yml
 
-- name: Include "{{nomad_type_of_node}}" nomad recipe
-  include: "{{nomad_type_of_node}}.yml"
+- name: "Configure Nomad"
+  include: configure.yml
+
+- name: "Create Nomad service"  
+  include: include_services.yml
+  when: create_nomad_service
+
+- name: Start Nomad using Linux services
+  service:
+    name: nomad
+    enabled: yes
+    state: started
+  when: create_nomad_service
+
+- name: Start Nomad using nomad daemon
+  shell: "su - {{ nomad_user }} -c '{{ nomad_installation_dir }}/nomad agent -config={{ nomad_config_dir }} >{{ nomad_log_dir }}/nomad.log 2>{{ nomad_log_dir }}/nomad.error.log &'"  
+  when: not create_nomad_service  

@@ -1,0 +1,82 @@
+- name: Base configuration
+  template:
+    src: conf/base.hcl.j2
+    dest: "{{ nomad_config_dir }}/base.hcl"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Server configuration
+  template:
+    src: conf/server.hcl.j2
+    dest: "{{ nomad_config_dir }}/server.hcl"
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - server_enabled
+
+- name: Telemetry configuration
+  template:
+    src: conf/telemetry.hcl.j2
+    dest: "{{ nomad_config_dir }}/telemetry.hcl"
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - use_telemetry
+
+
+- name: Client configuration
+  template:
+    src: conf/client.hcl.j2
+    dest: "{{ nomad_config_dir }}/client.hcl"
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - client_enabled
+
+- name: Consul configuration
+  template:
+    src: conf/consul.hcl.j2
+    dest: "{{ nomad_config_dir }}/consul.hcl"
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - use_consul
+
+- name: Vault configuration
+  template:
+    src: conf/vault.hcl.j2
+    dest: "{{ nomad_config_dir }}/vault.hcl"
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - vault_enabled
+
+  
+- name: TLS configuration
+  template:
+    src: conf/tls.hcl.j2
+    dest: "{{ nomad_config_dir }}/tls.hcl"
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - use_tls
+
+  
+- name: Sentinel configuration
+  template:
+    src: conf/sentinel.hcl.j2
+    dest: "{{ nomad_config_dir }}/sentinel.hcl"
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - use_sentinel
+
+

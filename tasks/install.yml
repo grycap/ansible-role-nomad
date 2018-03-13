@@ -1,0 +1,37 @@
+- name: "Download Nomad {{ nomad_version }}"
+  get_url: 
+    url: "{{ nomad_url }}"
+    dest: "/tmp/{{ nomad_name }}"
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+  register: result
+  until: result|success
+  retries: 5
+  delay: 2
+
+- name: "Unarchive Nomad binary and copy to {{ nomad_installation_dir }}"
+  unarchive: 
+    src: "/tmp/{{ nomad_name }}"
+    remote_src: yes 
+    dest: "{{ nomad_installation_dir }}"
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+
+
+- name: "Create Nomad directories"
+  file:
+    dest: "{{ item }}"
+    state: directory
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+  with_items:
+    - "{{ nomad_data_dir }}"
+    - "{{ nomad_log_dir }}"
+  
+- name: Create config directory
+  file:
+    dest: "{{ nomad_config_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755

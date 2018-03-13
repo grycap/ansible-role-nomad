@@ -1,0 +1,37 @@
+server {
+
+    enabled = {{ server_enabled | bool | lower }}
+    authoritative_region = "{{ server_authoritative_region }}"
+    {% if server_enabled | bool -%}
+        bootstrap_expect = {{ server_bootstrap_expect }}
+    {%- endif %}
+
+    data_dir = "{{ server_nomad_data_dir }}"
+    enabled_schedulers = [{% for scheduler in server_enabled_schedulers -%} "{{ scheduler }}"{% if not loop.last %},{% endif %} {%- endfor -%} ]
+    encrypt = "{{ server_encrypt }}"
+    node_gc_threshold = "{{ server_node_gc_threshold }}"
+    job_gc_threshold = "{{ server_job_gc_threshold }}"
+    eval_gc_threshold = "{{ server_eval_gc_threshold }}"
+    deployment_gc_threshold = "{{ server_deployment_gc_threshold }}"
+    heartbeat_grace = "{{ server_heartbeat_grace }}"
+    min_heartbeat_ttl = "{{ server_min_heartbeat_ttl }}"
+    max_heartbeats_per_second = {{ server_max_heartbeats_per_second }}
+    num_schedulers = {{ server_num_schedulers }}
+    rejoin_after_leave = {{ server_rejoin_after_leave | bool | lower }}
+
+{% if use_consul == False %}
+    {% if server_retry_join -%}
+        retry_join = [{% for ip_port in server_retry_join_servers -%} "{{ ip_port }}" {% if not loop.last %},{% endif %}{%- endfor -%} ]
+    retry_max = {{ server_retry_max }}
+    retry_interval = "{{ server_retry_interval }}"
+
+    {%- endif %}
+
+    {% if server_start_join -%}
+
+        start_join = [{% for ip_port in server_start_join_servers -%} "{{ ip_port }}" {% if not loop.last %},{% endif %} {%- endfor -%} ]
+    {%- endif %}
+
+{% endif %}
+    
+}

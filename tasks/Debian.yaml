@@ -1,3 +1,0 @@
----
-- name: Apt install unzip
-  apt: name=unzip update_cache=yes

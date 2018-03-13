@@ -1,0 +1,17 @@
+- name: Create service for systemd 
+  template:
+    src: service/systemd.j2
+    dest: /lib/systemd/system/nomad.service
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: 0777
+  when: ansible_service_mgr == "systemd"
+
+- name: Create service for upstart 
+  template:
+    src: service/upstart.j2
+    dest: /etc/init.d/nomad
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: 0777
+  when: ansible_service_mgr == "upstart"

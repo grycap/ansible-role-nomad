@@ -1,3 +1,0 @@
----
-- name: Yum install unzip
-  yum: name=unzip

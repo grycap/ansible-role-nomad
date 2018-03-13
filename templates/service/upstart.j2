@@ -1,0 +1,75 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides: nomad
+# Required-Start:    $local_fs $remote_fs
+# Required-Stop:     $local_fs $remote_fs
+# Default-Start: 2 3 4 6
+# Default-Stop: 0 1 5
+# Short-Description: Nomad service.
+# Description: Distributed scheduler
+### END INIT INFO
+
+
+PID_FILE=/var/run/nomad.pid
+PATH="{{ nomad_installation_dir }}:/usr/sbin:/usr/bin:/sbin:/bin"
+SERVICE_NAME="Nomad"
+USER={{ nomad_user }} #"{{ nomad_user }}"
+. /lib/lsb/init-functions
+
+do_start()
+{
+    su - $USER -c '{{ nomad_installation_dir }}/nomad agent -config={{ nomad_config_dir }} >{{ nomad_log_dir }}/nomad.log 2>{{ nomad_log_dir }}/nomad.error.log & echo $!' > $PID_FILE
+    if [ -f $PID_FILE ]; then
+        return 1
+    else    
+        return 0
+    fi
+} 
+
+
+do_stop () {
+    
+    if [ -f $PID_FILE ]; then
+        PID=$(cat $PID_FILE)
+        kill -9 $PID
+        rm $PID_FILE
+    fi    
+    return 0
+}
+
+do_status ()
+{
+    if [ -f $PID_FILE ]; then
+        echo "$SERVICE_NAME is running"
+    else
+        echo "$SERVICE_NAME is not running"
+    fi
+}
+
+case "$1" in
+  start)
+    log_daemon_msg "Starting Hashicorp Nomad"
+    do_start
+	;;
+  restart|reload|force-reload)
+    log_daemon_msg "Stopping Hashicorp Nomad"
+    do_stop
+    log_daemon_msg "Starting Hashicorp Nomad" 
+    do_start
+	;;
+  stop)
+    log_daemon_msg "Stopping Hashicorp Nomad"
+    do_stop 
+	;;
+  status)
+    do_status
+  ;;
+  *)
+	echo "Usage: $0 start|stop|restart|status" >&2
+	exit 1
+	;;
+esac
+
+exit 0
+

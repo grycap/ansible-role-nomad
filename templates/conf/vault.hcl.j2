@@ -1,0 +1,16 @@
+vault {
+
+    address = "{{ vault_address }}"
+    allow_unauthenticated = {{ vault_allow_unauthenticated | bool | lower }}
+    enabled = {{ vault_enabled | bool | lower }}
+    ca_file = "{{ vault_ca_file }}"
+    cert_file = "{{ vault_cert_file }}"
+    ca_path = "{{ vault_ca_path }}"
+    key_file = "{{ vault_key_file }}"
+    task_token_ttl = "{{ vault_task_token_ttl }}"
+    create_from_role = "{{ vault_create_from_role }}"
+    tls_server_name = "{{ vault_tls_server_name }}"
+    tls_skip_verify = {{ vault_tls_skip_verify | bool | lower }}
+    token = "{{ vault_token }}"
+
+}

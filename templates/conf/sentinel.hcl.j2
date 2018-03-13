@@ -1,0 +1,8 @@
+sentinel {
+{%- for key, value in sentinel_imports.items() %} 
+    import "{{ key }}" {
+        path = "{{ value['path'] }}"
+        args = [ {%- for arg in value['args'] %} "{{ arg }}"{% if not loop.last %},{% endif %}{%- endfor %} ]
+    }
+{%- endfor %}
+}

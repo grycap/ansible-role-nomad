@@ -1,0 +1,80 @@
+client {
+    alloc_dir = "{{ client_alloc_dir }}"
+    enabled = {{ client_enabled | bool | lower }}
+    max_kill_timeout = "{{ client_max_kill_timeout }}"
+    network_interface = "{{ client_network_interface }}"
+    node_class = "{{ client_node_class }}"
+    state_dir = "{{ client_state_dir }}"
+    gc_interval = "{{ client_gc_interval }}"
+    gc_disk_usage_threshold = {{ client_gc_disk_usage_threshold }}
+    gc_inode_usage_threshold = {{ client_gc_inode_usage_threshold }}
+    gc_max_allocs = {{ client_gc_max_allocs }}
+    gc_parallel_destroys = {{ client_gc_parallel_destroys }}
+    no_host_uuid = {{ client_no_host_uuid | bool | lower }}
+
+{% if use_consul == False %}
+    servers = [{% for ip_port in client_servers_to_join -%} "{{ ip_port }}" {% if not loop.last %},{% endif %}{%- endfor -%} ]
+{% endif %}
+
+{% if use_client_reserved == True %}
+    reserved {
+        {%- for key, value in client_reserved.items() %} 
+        {%- if value|string or value == "" %}  
+        {{ key }} = "{{ value }}"
+        {%- else %}
+        {%- if value|bool%}  
+        {{ key }} = {{ value | bool | lower }}  
+        {%- else %}
+        {{ key }} = {{ value }} 
+        {%- endif -%}
+        {%- endif -%}
+        {%- endfor %}
+
+    }
+{% endif %}
+
+{% if use_client_meta == True %}
+    meta {
+        {%- for key, value in client_meta.items() %} 
+        {%- if value|string or value == "" %} 
+        {{ key }} = "{{ value }}"
+        {%- else -%}
+        {%- if value|bool%}  
+        {{ key }} = {{ value | bool | lower }}  
+        {%- else %}
+        {{ key }} = {{ value }} 
+        {%- endif -%}
+        {%- endif -%}
+        {%- endfor %}
+
+    }
+{% endif %}
+
+{% if use_client_options == True %}
+    options {
+        {%- for key, value in client_options.items() %} 
+        {%- if value|string or value == "" %}  
+        {{ key }} = "{{ value }}"
+        {%- else %}
+        {%- if value|bool %}  
+        {{ key }} = {{ value | bool | lower }}  
+        {%- else %}
+        {{ key }} = {{ value }} 
+        {%- endif -%}
+        {%- endif -%}
+        {%- endfor %}
+
+    }
+{% endif %}
+
+{% if use_chroot_env == True %}
+    chroot_env {
+        {%- for key, value in chroot_env.items() %} 
+        "{{ key }}" = "{{ value }}"
+        {%- endfor %}
+
+    }
+{% endif %}
+
+}
+

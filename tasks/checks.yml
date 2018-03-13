@@ -1,0 +1,40 @@
+---
+- name: Checking distribution 
+  fail:
+    msg: "{{ ansible_distribution }} is not supported"
+  when: ansible_distribution not in os_valid_distributions
+
+- name: Checking version of OS
+  fail:
+    msg: "{{ ansible_distribution_version}} of {{ ansible_distribution }} is not supported"
+  when: ansible_distribution_version|version_compare(os_minimum_versions[ansible_distribution], '<')
+
+- name: Checking server_start_join is different of server_retry_join when consul is not enabled and server mode is selected
+  fail:
+    msg: "server_start_join and server_retry_join must be different in case of consul is not enabled"
+  when: not use_consul and server_start_join == server_retry_join and server_enabled
+
+- name: Checking connecting variables if consul is not enabled for servers
+  fail:
+    msg: "server_start_join OR server_retry_join must be true in case of consul is not enabled"
+  when: not use_consul and server_enabled and ( server_start_join or server_retry_join )    
+
+- name: Checking connecting variables for clients
+  fail:
+    msg: "client_servers_to_join is empty and must contain a list of nomad servers"
+  when: not use_consul and client_enabled and client_servers_to_join|length == 0
+
+- name: Checking that the agent is server or client (if is not in debug mode)
+  fail:
+    msg: "Agent must be client OR server"
+  when: not enable_debug and client_enabled | bool | lower == server_enabled | bool | lower
+
+- name: Checking that the agent is server or client 
+  fail:
+    msg: "Agent must be client OR server"
+  when: not client_enabled and not server_enabled
+
+- name: Checking that disable_tagged_metrics is not true when nomad_version<0.7.0
+  fail:
+    msg: "disable_tagged_metrics must be true when nomad_version<0.7.0"
+  when: use_telemetry and not disable_tagged_metrics and nomad_version|version_compare(0.7.0, '<')
