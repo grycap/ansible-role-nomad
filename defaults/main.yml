@@ -114,14 +114,14 @@ client_gc_max_allocs: 50 #(int: 50) - Specifies the maximum number of allocation
 client_gc_parallel_destroys: 2 #(int: 2) - Specifies the maximum number of parallel destroys allowed by the garbage collector. This value should be relatively low to avoid high resource usage during garbage collections.
 client_no_host_uuid: true #(bool: true) - By default a random node UUID will be generated, but setting this to false will use the system's UUID. Before Nomad 0.6 the default was to use the system UUID.
 
-use_client_reserved: true # Includes reserved variable to client.hcl. The user can comment 
+use_client_reserved: false # Includes reserved variable to client.hcl. The user can comment 
 client_reserved: #Specifies that Nomad should reserve a portion of the node's resources from receiving tasks. This can be used to target a certain capacity usage for the node. For example, 20% of the node's CPU could be reserved to target a CPU utilization of 80%.
   cpu: 500               #(int: 0) - Specifies the amount of CPU to reserve, in MHz.
   memory: 512               #(int: 0) - Specifies the amount of memory to reserve, in MB.
   disk: 1024               #(int: 0) - Specifies the amount of disk to reserve, in MB. 
   reserved_ports: "22,80,8500-8600"               #(string: "") - Specifies a comma-separated list of ports to reserve on all fingerprinted network devices. Ranges can be specified by using a hyphen separated the two inclusive ends.
 
-use_client_meta: true
+use_client_meta: false
 client_meta: {} #(map[string]string: nil) - Specifies a key-value map that annotates with user-defined metadata.
   
 
