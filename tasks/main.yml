@@ -39,4 +39,4 @@
       shell: "su - {{ nomad_user }} -c '{{ nomad_installation_dir }}/nomad agent -config={{ nomad_config_dir }} >{{ nomad_log_dir }}/nomad.log 2>{{ nomad_log_dir }}/nomad.error.log &'"  
       when: not create_nomad_service  
     
-  when: nomad_output|failed
+  when: nomad_output is failed
