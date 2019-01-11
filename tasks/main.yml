@@ -1,34 +1,42 @@
 ---
-- name: "Checks system"
-  include: checks.yml
+- name: Checking is nomad is installed
+  command: nomad --version
+    register: nomad_output
+  ignore_errors: True
 
-- name: "Create facts"
-  set_fact: 
-    nomad_hostname: "{{ ansible_hostname }}"
+- block:
+    - name: "Checks system"
+      include: checks.yml
 
-- name: "Creating user and group"
-  include: create_user.yml
-  
-- name: "Install role requeriments"
-  include: requeriments.yml
+    - name: "Create facts"
+      set_fact: 
+        nomad_hostname: "{{ ansible_hostname }}"
 
-- name: "Install Nomad"
-  include: install.yml
+    - name: "Creating user and group"
+      include: create_user.yml
+    
+    - name: "Install role requeriments"
+      include: requeriments.yml
 
-- name: "Configure Nomad"
-  include: configure.yml
+    - name: "Install Nomad"
+      include: install.yml
 
-- name: "Create Nomad service"  
-  include: include_services.yml
-  when: create_nomad_service
+    - name: "Configure Nomad"
+      include: configure.yml
 
-- name: Start Nomad using Linux services
-  service:
-    name: nomad
-    enabled: yes
-    state: started
-  when: create_nomad_service
+    - name: "Create Nomad service"  
+      include: include_services.yml
+      when: create_nomad_service
 
-- name: Start Nomad using nomad daemon
-  shell: "su - {{ nomad_user }} -c '{{ nomad_installation_dir }}/nomad agent -config={{ nomad_config_dir }} >{{ nomad_log_dir }}/nomad.log 2>{{ nomad_log_dir }}/nomad.error.log &'"  
-  when: not create_nomad_service  
+    - name: Start Nomad using Linux services
+      service:
+        name: nomad
+        enabled: yes
+        state: started
+      when: create_nomad_service
+
+    - name: Start Nomad using nomad daemon
+      shell: "su - {{ nomad_user }} -c '{{ nomad_installation_dir }}/nomad agent -config={{ nomad_config_dir }} >{{ nomad_log_dir }}/nomad.log 2>{{ nomad_log_dir }}/nomad.error.log &'"  
+      when: not create_nomad_service  
+    
+  when: nomad_output is failed
