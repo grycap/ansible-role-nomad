@@ -1,7 +1,7 @@
 ---
 - name: Checking is nomad is installed
   command: nomad --version
-    register: nomad_output
+  register: nomad_output
   ignore_errors: True
 
 - block:
