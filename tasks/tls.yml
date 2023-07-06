@@ -36,7 +36,16 @@
     args:
       chdir: "{{ nomad_config_dir }}/certs"
       creates: "{{ nomad_config_dir }}/certs/{{ nomad_region }}-server-nomad.pem"
+    delegate_to: localhost
   
+  - name: Copy Server Cert to the nodes
+    copy:
+      src: "{{ item }}"
+      dest: "{{ item }}"
+    loop:
+    - "{{ nomad_config_dir }}/certs/{{ nomad_region }}-server-nomad.pem"
+    - "{{ nomad_config_dir }}/certs/{{ nomad_region }}-server-nomad-key.pem"
+
   - name: Set cert files
     set_fact:
       tls_cert_file: "{{ nomad_config_dir }}/certs/{{ nomad_region }}-server-nomad.pem"
@@ -51,7 +60,16 @@
     args:
       chdir: "{{ nomad_config_dir }}/certs"
       creates: "{{ nomad_config_dir }}/certs/global-client-nomad.pem"
-  
+    delegate_to: localhost
+
+  - name: Copy client Cert to the nodes
+    copy:
+      src: "{{ item }}"
+      dest: "{{ item }}"
+    loop:
+    - "{{ nomad_config_dir }}/certs/global-client-nomad.pem"
+    - "{{ nomad_config_dir }}/certs/global-client-nomad-key.pem"
+
   - name: Set cert files
     set_fact:
       tls_cert_file: "{{ nomad_config_dir }}/certs/global-client-nomad.pem"
