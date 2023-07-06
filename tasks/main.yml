@@ -23,7 +23,7 @@
 
     - name: Configure TLS
       include: tls.yml
-      when: use_tls
+      when: use_tls and generate_tls
 
     - name: "Configure Nomad"
       include: configure.yml
