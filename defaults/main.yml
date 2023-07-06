@@ -184,6 +184,7 @@ vault_token: "vaul_token_default" # (string: "") - Specifies the parent Vault to
 # --------------------------------------------------------------------------------------------------------------------------------------- #
 # START - TLS  configuration
 use_tls: false
+generate_tls: false # (bool: false) - Specifies if Nomad should generate a self-signed certificate for TLS communication.
 tls_ca_file: "" #(string: "") - Specifies the path to the CA certificate to use for Nomad's TLS communication.
 tls_cert_file: "" # (string: "") - Specifies the path to the certificate file used for Nomad's TLS communication.
 tls_key_file: "" # (string: "") - Specifies the path to the key file to use for Nomad's TLS communication.

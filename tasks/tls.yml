@@ -1,0 +1,60 @@
+---
+- name: Create Nomad TLS directory
+  file:
+    path: "{{ nomad_config_dir }}/certs"
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: 0755
+    state: directory
+
+- name: Create Nomad TLS CA
+  command: nomad tls ca create
+  args:
+    chdir: "{{ nomad_config_dir }}/certs"
+    creates: "{{ nomad_config_dir }}/certs/nomad-agent-ca.pem"
+  when: ansible_connection == 'local'
+  delegate_to: localhost
+
+- name: Wait CA Cert to be generated
+  wait_for:
+    path: "{{ nomad_config_dir }}/certs/nomad-agent-ca.pem"
+  delegate_to: localhost
+
+- name: Copy CA to the nodes
+  copy:
+    src: "{{ nomad_config_dir }}/certs/nomad-agent-ca.pem"
+    dest: "{{ nomad_config_dir }}/certs/nomad-agent-ca.pem"
+
+- name: Set CA file
+  set_fact:
+    tls_ca_file: "{{ nomad_config_dir }}/certs/nomad-agent-ca.pem"
+
+- block:
+
+  - name: Create Nomad TLS Server Cert
+    command: nomad tls cert create -server -region global -additional-dnsname= -additional-ipaddress
+    args:
+      chdir: "{{ nomad_config_dir }}/certs"
+      creates: "{{ nomad_config_dir }}/certs/global-server-nomad.pem"
+  
+  - name: Set cert files
+    set_fact:
+      tls_cert_file: "{{ nomad_config_dir }}/certs/global-server-nomad.pem"
+      tls_key_file: "{{ nomad_config_dir }}/certs/global-server-nomad-key.pem"
+
+  when: server_enabled
+
+- block:
+
+  - name: Create Nomad TLS client Cert
+    command: nomad tls cert create -client -additional-dnsname= -additional-ipaddress
+    args:
+      chdir: "{{ nomad_config_dir }}/certs"
+      creates: "{{ nomad_config_dir }}/certs/global-client-nomad.pem"
+  
+  - name: Set cert files
+    set_fact:
+      tls_cert_file: "{{ nomad_config_dir }}/certs/global-client-nomad.pem"
+      tls_key_file: "{{ nomad_config_dir }}/certs/global-client-nomad-key.pem"
+
+  when: client_enabled
