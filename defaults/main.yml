@@ -1,6 +1,6 @@
 ---
 # Installation vars
-nomad_version: 0.7.0
+nomad_version: 1.5.6
 nomad_user: nomad
 nomad_group: nomad
 use_nomad_ui: false
@@ -184,7 +184,6 @@ vault_token: "vaul_token_default" # (string: "") - Specifies the parent Vault to
 # --------------------------------------------------------------------------------------------------------------------------------------- #
 # START - TLS  configuration
 use_tls: false
-generate_tls: false # (bool: false) - Specifies if Nomad should generate a self-signed certificate for TLS communication.
 tls_ca_file: "" #(string: "") - Specifies the path to the CA certificate to use for Nomad's TLS communication.
 tls_cert_file: "" # (string: "") - Specifies the path to the certificate file used for Nomad's TLS communication.
 tls_key_file: "" # (string: "") - Specifies the path to the key file to use for Nomad's TLS communication.
@@ -192,6 +191,10 @@ tls_http: false # (bool: false) - Specifies if TLS should be enabled on the HTTP
 tls_rpc: false # (bool: false) - Specifies if TLS should be enabled on the RPC endpoints and Raft traffic between the Nomad servers. Enabling this on a Nomad client makes the client use TLS for making RPC requests to the Nomad servers.
 tls_verify_https_client: false # (bool: false) - Specifies agents should require client certificates for all incoming HTTPS requests. The client certificates must be signed by the same CA as Nomad.
 tls_verify_server_hostname: false # (bool: false) - Specifies if outgoing TLS connections should verify the server's hostname.
+generate_tls: false # (bool: false) - Specifies if Nomad should generate a self-signed certificate for TLS communication.
+tls_public_ip: "{{ ansible_default_ipv4.address }}"
+tls_private_ip: "{{ ansible_default_ipv4.address }}"
+tls_dns_name: "{{ ansible_hostname }}"
 # END - TLS configuration
 # --------------------------------------------------------------------------------------------------------------------------------------- #
 # START - Sentinel configuration

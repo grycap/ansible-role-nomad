@@ -32,7 +32,7 @@
 - block:
 
   - name: Create Nomad TLS Server Cert
-    command: nomad tls cert create -server -region global -additional-dnsname= -additional-ipaddress
+    command: nomad tls cert create -server -region global -additional-dnsname={{ tls_dns_name }} -additional-ipaddress={{ tls_private_ip }} -additional-ipaddress={{ tls_public_ip }}
     args:
       chdir: "{{ nomad_config_dir }}/certs"
       creates: "{{ nomad_config_dir }}/certs/global-server-nomad.pem"
@@ -47,7 +47,7 @@
 - block:
 
   - name: Create Nomad TLS client Cert
-    command: nomad tls cert create -client -additional-dnsname= -additional-ipaddress
+    command: nomad tls cert create -client -additional-dnsname={{ tls_dns_name }} -additional-ipaddress={{ tls_private_ip }} -additional-ipaddress={{ tls_public_ip }}
     args:
       chdir: "{{ nomad_config_dir }}/certs"
       creates: "{{ nomad_config_dir }}/certs/global-client-nomad.pem"
