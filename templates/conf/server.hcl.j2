@@ -19,10 +19,6 @@ server {
     num_schedulers = {{ server_num_schedulers }}
     rejoin_after_leave = {{ server_rejoin_after_leave | bool | lower }}
 
-    ui {
-        enabled = {{ use_nomad_ui | bool | lower }}
-    }
-
 {% if use_consul == False %}
     {% if server_retry_join -%}
         retry_join = [{% for ip_port in server_retry_join_servers -%} "{{ ip_port }}" {% if not loop.last %},{% endif %}{%- endfor -%} ]

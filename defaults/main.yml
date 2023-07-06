@@ -3,7 +3,6 @@
 nomad_version: 1.5.6
 nomad_user: nomad
 nomad_group: nomad
-use_nomad_ui: false
 create_nomad_service: true
 # --------------------------------------------------------------------------------------------------------------------------------------- #
 # Directories
@@ -12,7 +11,7 @@ nomad_log_dir: /var/log/nomad
 nomad_config_dir: /etc/nomad
 # --------------------------------------------------------------------------------------------------------------------------------------- #
 # START - Base configuration 
-name: "default_name" #(string: [hostname]) - Specifies the name of the local node. This value is used to identify individual nodes in a given datacenter and must be unique per-datacenter.
+nomad_name: "default_name" #(string: [hostname]) - Specifies the name of the local node. This value is used to identify individual nodes in a given datacenter and must be unique per-datacenter.
 use_addresses: false
 nomad_addresses: # Specifies the bind address for individual network services. Any values configured in this stanza take precedence over the default bind_addr.  
   http: "127.0.0.1" # The address the HTTP server is bound to. This is the most common bind address to change.
@@ -24,7 +23,7 @@ nomad_advertise: # Specifies the advertise address for individual network servic
   rpc: "127.0.0.1" # The address to advertise for the RPC interface. This address should be reachable by all of the agents in the cluster.
   serf: "127.0.0.1" # The address advertised for the gossip layer. This address must be reachable from all server nodes. It is not required that clients can reach this address.
 bind_address: "172.17.0.4" # Specifies which address the Nomad agent should bind to for network services, including the HTTP interface as well as the internal gossip protocol and RPC mechanism. This should be specified in IP format, and can be used to easily bind all network services to the same address. It is also possible to bind the individual services to different addresses using the addresses configuration option. Dev mode (-dev) defaults to localhost.
-datacenter: "dc1" # Specifies the data center of the local agent. All members of a datacenter should share a local LAN connection.
+nomad_datacenter: "dc1" # Specifies the data center of the local agent. All members of a datacenter should share a local LAN connection.
 nomad_data_dir: "/opt/nomad" #  Specifies a local directory used to store agent state. Client nodes use this directory by default to store temporary allocation data as well as cluster information. Server nodes use this directory to store cluster state, including the replicated log and snapshot data. This must be specified as an absolute path.
 disable_anonymous_signature: false # Specifies if Nomad should provide an anonymous signature for de-duplication with the update check.
 disable_update_check: false # Specifies if Nomad should not check for updates and security bulletins.
@@ -37,7 +36,7 @@ nomad_ports: # Specifies the network ports used for different services required 
   http: 4646 # The port used to run the HTTP server.
   rpc: 4647 # The port used for internal RPC communication between agents and servers, and for inter-server traffic for the consensus algorithm (raft).
   serf: 4648 # The port used for the gossip protocol for cluster membership. Both TCP and UDP should be routable between the server nodes on this port.
-region: "global" #(string: "global") - Specifies the region the Nomad agent is a member of. A region typically maps to a geographic region, for example us, with potentially multiple zones, which map to datacenters such as us-west and us-east.
+nomad_region: "global" #(string: "global") - Specifies the region the Nomad agent is a member of. A region typically maps to a geographic region, for example us, with potentially multiple zones, which map to datacenters such as us-west and us-east.
 syslog_facility: "LOCAL0" #(string: "LOCAL0") - Specifies the syslog facility to write to. This has no effect unless enable_syslog is true.
 acl_enabled: false # The acl stanza configures the Nomad agent to enable ACLs and tunes various ACL parameters.
 acl_conf:

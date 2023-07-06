@@ -1,8 +1,8 @@
 
-name = "{{ name }}"
-region = "{{ region }}"
+name = "{{ nomad_name }}"
+region = "{{ nomad_region }}"
 bind_addr = "{{ bind_address }}"
-datacenter = "{{ datacenter }}"
+datacenter = "{{ nomad_datacenter }}"
 data_dir = "{{ nomad_data_dir }}"
 disable_update_check = {{ disable_update_check | bool | lower }}
 disable_anonymous_signature = {{ disable_anonymous_signature | bool | lower }}
