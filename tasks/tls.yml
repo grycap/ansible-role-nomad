@@ -76,3 +76,12 @@
       tls_key_file: "{{ nomad_config_dir }}/certs/global-client-nomad-key.pem"
 
   when: client_enabled
+
+- name: Set correct permissions in Nomad TLS directory
+  file:
+    path: "{{ nomad_config_dir }}/certs"
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: 0755
+    state: directory
+    recurse: yes
