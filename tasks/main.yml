@@ -37,3 +37,7 @@
   shell: "su - {{ nomad_user }} -c '{{ nomad_installation_dir }}/nomad agent -config={{ nomad_config_dir }} >{{ nomad_log_dir }}/nomad.log 2>{{ nomad_log_dir }}/nomad.error.log &'"  
   when: not create_nomad_service  
 
+- name: Set NOMAD_ADDR environment variable
+  lineinfile:
+    dest: /etc/environment
+    line: "NOMAD_ADDR=https://127.0.0.1:4646"

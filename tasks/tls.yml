@@ -28,6 +28,11 @@
   set_fact:
     tls_ca_file: "{{ nomad_config_dir }}/certs/nomad-agent-ca.pem"
 
+- name: Set NOMAD_CACERT environment variable
+  lineinfile:
+    dest: /etc/environment
+    line: "NOMAD_CACERT={{ tls_ca_file }}"
+
 - block:
 
   - name: Create Nomad TLS Server Cert
@@ -51,6 +56,31 @@
       tls_key_file: "{{ nomad_config_dir }}/certs/{{ nomad_region }}-server-nomad-key.pem"
 
   when: server_enabled
+
+- name: Create Nomad TLS CLI Cert
+  command: nomad tls cert create -cli
+  args:
+    chdir: "{{ nomad_config_dir }}/certs"
+    creates: "{{ nomad_config_dir }}/certs/global-cli-nomad.pem"
+  delegate_to: localhost
+
+- name: Copy client Cert to the nodes
+  copy:
+    src: "{{ item }}"
+    dest: "{{ item }}"
+  loop:
+  - "{{ nomad_config_dir }}/certs/global-cli-nomad.pem"
+  - "{{ nomad_config_dir }}/certs/global-cli-nomad-key.pem"
+
+- name: Set NOMAD_CLIENT_CERT environment variable
+  lineinfile:
+    dest: /etc/environment
+    line: "NOMAD_CLIENT_CERT={{ nomad_config_dir }}/certs/global-cli-nomad.pem"
+
+- name: Set NOMAD_CLIENT_KEY environment variable
+  lineinfile:
+    dest: /etc/environment
+    line: "NOMAD_CLIENT_KEY={{ nomad_config_dir }}/certs/global-cli-nomad-key.pem"
 
 - block:
 
@@ -81,6 +111,5 @@
     path: "{{ nomad_config_dir }}/certs"
     owner: "{{ nomad_user }}"
     group: "{{ nomad_group }}"
-    mode: 0755
     state: directory
     recurse: yes
