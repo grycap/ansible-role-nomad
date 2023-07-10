@@ -7,23 +7,12 @@
     mode: 0755
     state: directory
 
-- name: Create Nomad TLS directory in localhost
-  file:
-    path: "{{ nomad_config_dir }}/certs"
-    owner: "{{ nomad_user }}"
-    group: "{{ nomad_group }}"
-    mode: 0755
-    state: directory
-  when: ansible_connection == 'local'
-  delegate_to: localhost
-
 - name: Create Nomad TLS CA
   command: nomad tls ca create
   args:
     chdir: "{{ nomad_config_dir }}/certs"
     creates: "{{ nomad_config_dir }}/certs/nomad-agent-ca.pem"
   when: ansible_connection == 'local'
-  delegate_to: localhost
 
 - name: Wait CA Cert to be generated
   wait_for:
