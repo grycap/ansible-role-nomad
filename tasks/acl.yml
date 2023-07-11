@@ -11,6 +11,9 @@
       NOMAD_CLIENT_KEY: /etc/nomad/certs/global-cli-nomad-key.pem
       NOMAD_ADDR: "https://127.0.0.1:4646"
     register: nomad_acl_bootstrap
+    until: nomad_acl_bootstrap is success
+    retries: 24
+    delay: 5
 
   - name: Create Nomad Bootstrap Token file
     copy:
@@ -29,7 +32,7 @@
   set_fact:
     NOMAD_TOKEN: "{{ lookup('file', nomad_config_dir + '/certs/acl_bootstrap')| regex_search(regexp,'\\1') | first }}"
   vars:
-    regexp: 'SecretID:\s+(.*)'
+    regexp: 'Secret ID\s+=\s+(.*)'
   delegate_to: localhost
 
 - name: nomad_secret_id
