@@ -44,7 +44,7 @@ acl_conf:
   token_ttl: "30s" # (string: "30s") - Specifies the maximum time-to-live (TTL) for cached ACL tokens. This does not affect servers, since they do not cache tokens. Setting this value lower reduces how stale a token can be, but increases the request load against servers. If a client cannot reach a server, for example because of an outage, the TTL will be ignored and the cached value used.
   policy_ttl: "30s" #(string: "30s") - Specifies the maximum time-to-live (TTL) for cached ACL policies. This does not affect servers, since they do not cache policies. Setting this value lower reduces how stale a policy can be, but increases the request load against servers. If a client cannot reach a server, for example because of an outage, the TTL will be ignored and the cached value used.
   replication_token: "" #(string: "") - Specifies the Secret ID of the ACL token to use for replicating policies and tokens. This is used by servers in non-authoritative region to mirror the policies and tokens into the local region.
-
+acl_bootstrap: false # Create the default ACL policy and token on agent start. This is only used when ACLs are enabled.
 # END - Base configuration
 # --------------------------------------------------------------------------------------------------------------------------------------- #
 # START - Telemetry configuration

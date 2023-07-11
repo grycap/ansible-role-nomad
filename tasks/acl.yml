@@ -1,0 +1,40 @@
+---
+- block:
+
+  - name: Gen ACL Bootstrap
+    command: nomad acl bootstrap
+    args:
+      creates: "{{ nomad_config_dir }}/certs/acl_bootstrap"
+    register: acl_bootstrap
+    until: acl_bootstrap is success
+    retries: 24
+    delay: 5
+
+  - name: Create Consul Bootstrap Token file
+    copy:
+      content: "{{ acl_bootstrap.stdout }}"
+      dest: "{{ nomad_config_dir }}/certs/acl_bootstrap"
+      force: false
+
+  when: ansible_connection == 'local'
+
+- name: Wait Bootstrap to be generated
+  wait_for:
+    path: "{{ nomad_config_dir }}/certs/acl_bootstrap"
+  delegate_to: localhost
+
+- name: Get Bootstrap Token
+  set_fact:
+    NOMAD_TOKEN: "{{ lookup('file', nomad_config_dir + '/certs/acl_bootstrap')| regex_search(regexp,'\\1') | first }}"
+  vars:
+    regexp: 'SecretID:\s+(.*)'
+  delegate_to: localhost
+
+- name: nomad_secret_id
+  debug:
+    msg: "{{ NOMAD_TOKEN }}"
+
+- name: Set NOMAD_TOKEN environment variable
+  lineinfile:
+    dest: /etc/environment
+    line: "NOMAD_TOKEN={{ NOMAD_TOKEN }}"

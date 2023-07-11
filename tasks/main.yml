@@ -41,3 +41,7 @@
   lineinfile:
     dest: /etc/environment
     line: "NOMAD_ADDR=https://127.0.0.1:4646"
+
+- name: Get/Gen Bootstrap token
+  include_tasks: acl.yml
+  when: acl_enabled and acl_bootstrap
