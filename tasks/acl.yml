@@ -5,6 +5,11 @@
     command: nomad acl bootstrap
     args:
       creates: "{{ nomad_config_dir }}/certs/acl_bootstrap"
+    environment:
+      NOMAD_CACERT: /etc/nomad/certs/nomad-agent-ca.pem
+      NOMAD_CLIENT_CERT: /etc/nomad/certs/global-cli-nomad.pem
+      NOMAD_CLIENT_KEY: /etc/nomad/certs/global-cli-nomad-key.pem
+      NOMAD_ADDR: "https://127.0.0.1:4646"
     register: acl_bootstrap
     until: acl_bootstrap is success
     retries: 24
