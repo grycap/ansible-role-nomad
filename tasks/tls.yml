@@ -1,4 +1,5 @@
 ---
+# Create certs directory
 - name: Create Nomad TLS directory
   file:
     path: "{{ nomad_config_dir }}/certs"
@@ -7,6 +8,8 @@
     mode: 0755
     state: directory
 
+
+# Generate CA Cert
 - name: Create Nomad TLS CA
   command: nomad tls ca create
   args:
@@ -33,21 +36,8 @@
     dest: /etc/environment
     line: "NOMAD_CACERT={{ tls_ca_file }}"
 
-- block:
 
-  - name: Create Nomad TLS Server Cert
-    command: nomad tls cert create -server -cluster-region {{ nomad_region }} -additional-dnsname={{ tls_dns_name }} -additional-ipaddress={{ tls_private_ip }} -additional-ipaddress={{ tls_public_ip }}
-    args:
-      chdir: "{{ nomad_config_dir }}/certs"
-      creates: "{{ nomad_config_dir }}/certs/{{ nomad_region }}-server-nomad.pem"
-
-  - name: Set cert files
-    set_fact:
-      tls_cert_file: "{{ nomad_config_dir }}/certs/{{ nomad_region }}-server-nomad.pem"
-      tls_key_file: "{{ nomad_config_dir }}/certs/{{ nomad_region }}-server-nomad-key.pem"
-
-  when: server_enabled
-
+# Generate CLI Cert
 - name: Create Nomad TLS CLI Cert
   command: nomad tls cert create -cli
   args:
@@ -78,13 +68,68 @@
     dest: /etc/environment
     line: "NOMAD_CLIENT_KEY={{ nomad_config_dir }}/certs/global-cli-nomad-key.pem"
 
+
+# Generate Server Cert
 - block:
 
-  - name: Create Nomad TLS client Cert
-    command: nomad tls cert create -client -additional-dnsname={{ tls_dns_name }} -additional-ipaddress={{ tls_private_ip }} -additional-ipaddress={{ tls_public_ip }}
+  - name: Create server TLS directory
+    file:
+      path: "{{ nomad_config_dir }}/certs/{{ ansible_hostname }}"
+      owner: "{{ nomad_user }}"
+      group: "{{ nomad_group }}"
+      mode: 0755
+      state: directory
+    delegate_to: localhost
+
+  - name: Create Nomad TLS Server Cert
+    command: nomad tls cert create -server -cluster-region {{ nomad_region }} -additional-dnsname={{ tls_dns_name }} -additional-ipaddress={{ tls_private_ip }} -additional-ipaddress={{ tls_public_ip }} -ca {{ nomad_config_dir }}/certs/nomad-agent-ca.pem -key {{ nomad_config_dir }}/certs/nomad-agent-ca-key.pem
     args:
-      chdir: "{{ nomad_config_dir }}/certs"
-      creates: "{{ nomad_config_dir }}/certs/global-client-nomad.pem"
+      chdir: "{{ nomad_config_dir }}/certs/{{ ansible_hostname }}"
+      creates: "{{ nomad_config_dir }}/certs/{{ ansible_hostname }}/{{ nomad_region }}-server-nomad.pem"
+    delegate_to: localhost
+
+  - name: Copy Server Cert to the nodes
+    copy:
+      src: "{{ nomad_config_dir }}/certs/{{ ansible_hostname }}/{{ item }}"
+      dest: "{{ nomad_config_dir }}/certs/{{ item }}"
+    loop:
+    - "{{ nomad_region }}-server-nomad.pem"
+    - "{{ nomad_region }}-server-nomad-key.pem"
+
+  - name: Set cert files
+    set_fact:
+      tls_cert_file: "{{ nomad_config_dir }}/certs/{{ nomad_region }}-server-nomad.pem"
+      tls_key_file: "{{ nomad_config_dir }}/certs/{{ nomad_region }}-server-nomad-key.pem"
+
+  when: server_enabled
+
+
+# Generate Client Cert
+- block:
+
+  - name: Create server TLS directory
+    file:
+      path: "{{ nomad_config_dir }}/certs/{{ ansible_hostname }}"
+      owner: "{{ nomad_user }}"
+      group: "{{ nomad_group }}"
+      mode: 0755
+      state: directory
+    delegate_to: localhost
+
+  - name: Create Nomad TLS client Cert
+    command: nomad tls cert create -client -additional-dnsname={{ tls_dns_name }} -additional-ipaddress={{ tls_private_ip }} -additional-ipaddress={{ tls_public_ip }} -ca {{ nomad_config_dir }}/certs/nomad-agent-ca.pem -key {{ nomad_config_dir }}/certs/nomad-agent-ca-key.pem
+    args:
+      chdir: "{{ nomad_config_dir }}/certs/{{ ansible_hostname }}"
+      creates: "{{ nomad_config_dir }}/certs/{{ ansible_hostname }}/global-client-nomad.pem"
+    delegate_to: localhost
+
+  - name: Copy client Cert to the nodes
+    copy:
+      src: "{{ nomad_config_dir }}/certs/{{ ansible_hostname }}/{{ item }}"
+      dest: "{{ nomad_config_dir }}/certs/{{ item }}"
+    loop:
+    - "global-client-nomad.pem"
+    - "global-client-nomad-key.pem"
 
   - name: Set cert files
     set_fact:
@@ -93,6 +138,8 @@
 
   when: client_enabled
 
+
+# Fix permissions
 - name: Set correct permissions in Nomad TLS directory
   file:
     path: "{{ nomad_config_dir }}/certs"
