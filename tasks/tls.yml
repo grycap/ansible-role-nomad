@@ -97,7 +97,7 @@
 
   - name: Set correct file permissions
     file:
-      path: "{{ nomad_config_dir }}/certs/{{ nomad_region }}-server-nomad-key.pem"
+      path: "{{ nomad_config_dir }}/certs/{{ ansible_hostname }}/{{ nomad_region }}-server-nomad-key.pem"
       state: file
       mode: 0644
     delegate_to: localhost
