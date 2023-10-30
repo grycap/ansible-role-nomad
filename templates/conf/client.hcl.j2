@@ -1,8 +1,5 @@
 client {
     enabled = {{ client_enabled | bool | lower }}
-{% if client_network_interface != "" %}
-    network_interface = "{{ client_network_interface }}"
-{% endif %}
 {% if client_alloc_dir != "" %}
     alloc_dir = "{{ client_alloc_dir }}"
 {% endif %}
