@@ -1,1 +1,3 @@
+- name: grycap.consul
+  version: ai4eosc
 - name: kevincoakley.facter

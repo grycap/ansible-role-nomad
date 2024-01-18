@@ -64,10 +64,18 @@ provisioner:
     host_vars:
       server0:
         nomad_master: true
+        consul_master: true
     group_vars:
       front:
         server_enabled: true
+        client_enabled: false
         nomad_master: false
+        consul_master: false
+        consul_server: true
+        consul_bootstrap_expect: 2
       wn:
         client_enabled: true
+        server_enabled: false
         nomad_master: false
+        consul_master: false
+        consul_server: false

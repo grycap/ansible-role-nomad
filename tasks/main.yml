@@ -16,14 +16,27 @@
   include_tasks: install.yml
 
 - name: Configure TLS
-  include_tasks: tls.yml
+  block:
+  # Generate CA Cert
+  - include_tasks: tls_ca.yml
+
+  # Generate CLI Cert
+  - include_tasks: tls_cli.yml
+
+  # Generate Server Cert
+  - include_tasks: tls_server.yml
+    when: server_enabled
+
+  # Generate Client Cert
+  - include_tasks: tls_client.yml
+    when: client_enabled
   when: use_tls and generate_tls
 
 - name: "Configure Nomad"
   include_tasks: configure.yml
 
 - name: "Create Nomad service"  
-  include_tasks: include_tasks_services.yml
+  include_tasks: services.yml
   when: create_nomad_service
 
 - name: Start Nomad using Linux services
@@ -43,5 +56,5 @@
     line: "NOMAD_ADDR=https://127.0.0.1:4646"
 
 - name: Get/Gen Bootstrap token
-  include_tasks_tasks: acl.yml
+  include_tasks: acl.yml
   when: acl_enabled and acl_bootstrap
