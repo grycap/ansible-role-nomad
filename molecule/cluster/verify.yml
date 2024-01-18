@@ -1,0 +1,23 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+
+  tasks:
+
+    - name: Test
+      command: nomad node status
+      register: nodes
+
+    - debug:
+        var: nodes.stdout
+
+    - name: Check service running
+      assert:
+        that:
+          - "'server0' in nodes.stdout"
+          - "'server1' in nodes.stdout"
+          - "'vnode-1' in nodes.stdout"
+        fail_msg: "Error getting nodes"
+        success_msg: "Nomad installed and running"
+
