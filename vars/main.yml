@@ -6,11 +6,12 @@ os_valid_distributions:
   - RedHat
   - CentOS
   - Ubuntu
+  - Rocky
 
 os_minimum_versions:
-  RedHat: 7
-  CentOS: 7
-  Ubuntu: 16.04
+  RedHat: 8
+  CentOS: 8
+  Ubuntu: 20.04
  
 nomad_architecture_map:
   amd64: amd64
