@@ -12,6 +12,7 @@ os_minimum_versions:
   RedHat: 8
   CentOS: 8
   Ubuntu: 20.04
+  Rocky: 8
  
 nomad_architecture_map:
   amd64: amd64
