@@ -27,9 +27,13 @@
 
 - name: "Fetch CA cert from nomad-master to ansible-master"
   fetch:
-    src: "{{ nomad_config_dir }}/certs/nomad-agent-ca.pem"
-    dest: "{{ nomad_fetch_dir }}/"
+    src: "{{ nomad_config_dir }}/certs/{{ item }}"
+    dest: "{{ nomad_fetch_dir }}/{{ item }}"
     flat: yes
+  when: nomad_master
+  loop:
+  - "nomad-agent-ca.pem"
+  - "nomad-agent-ca-key.pem"
 
 - name: Wait CA Cert to be generated
   wait_for:
@@ -38,8 +42,11 @@
 
 - name: Copy CA to the nodes
   copy:
-    src: "{{ nomad_fetch_dir }}/nomad-agent-ca.pem"
-    dest: "{{ nomad_config_dir }}/certs/nomad-agent-ca.pem"
+    src: "{{ nomad_fetch_dir }}/{{ item }}"
+    dest: "{{ nomad_config_dir }}/certs/{{ item }}"
+  loop:
+  - "nomad-agent-ca.pem"
+  - "nomad-agent-ca-key.pem"
 
 - name: Set CA file
   set_fact:

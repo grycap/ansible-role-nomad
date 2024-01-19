@@ -16,6 +16,7 @@
   loop:
   - "global-cli-nomad.pem"
   - "global-cli-nomad-key.pem"
+  when: nomad_master
 
 - name: Wait CLI Cert to be generated
   wait_for:

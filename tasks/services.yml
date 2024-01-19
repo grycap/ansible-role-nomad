@@ -4,7 +4,7 @@
     dest: /lib/systemd/system/nomad.service
     owner: "{{ nomad_user }}"
     group: "{{ nomad_group }}"
-    mode: 0777
+    mode: 0644
   when: ansible_service_mgr == "systemd"
 
 - name: Create service for upstart 
@@ -13,5 +13,5 @@
     dest: /etc/init.d/nomad
     owner: "{{ nomad_user }}"
     group: "{{ nomad_group }}"
-    mode: 0777
+    mode: 0644
   when: ansible_service_mgr == "upstart"

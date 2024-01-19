@@ -22,4 +22,3 @@ nomad_architecture_map:
 
 nomad_architecture: "{{ nomad_architecture_map[ansible_architecture] }}"
 nomad_url: "https://releases.hashicorp.com/nomad/{{ nomad_version }}/nomad_{{ nomad_version }}_linux_{{ nomad_architecture_map[ansible_architecture] }}.zip"
-nomad_name: "nomad_{{ nomad_version }}.zip"

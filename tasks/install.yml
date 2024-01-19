@@ -1,7 +1,7 @@
 - name: "Download Nomad {{ nomad_version }}"
   get_url: 
     url: "{{ nomad_url }}"
-    dest: "/tmp/{{ nomad_name }}"
+    dest: "/tmp/nomad_{{ nomad_version }}.zip"
     owner: "{{ nomad_user }}"
     group: "{{ nomad_group }}"
   register: result
@@ -11,9 +11,10 @@
 
 - name: "Unarchive Nomad binary and copy to {{ nomad_installation_dir }}"
   unarchive: 
-    src: "/tmp/{{ nomad_name }}"
+    src: "/tmp/nomad_{{ nomad_version }}.zip"
     remote_src: yes 
     dest: "{{ nomad_installation_dir }}"
+    creates: "{{ nomad_installation_dir }}/nomad"
     owner: "{{ nomad_user }}"
     group: "{{ nomad_group }}"
 
