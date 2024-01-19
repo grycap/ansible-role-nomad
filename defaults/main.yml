@@ -9,6 +9,7 @@ create_nomad_service: true
 nomad_master: "{% if (ansible_connection == 'local') %}True{% else %}False{% endif %}"
 # Nomad fetch dir at ansible host
 nomad_fetch_dir: /opt/consul
+nomad_download_dir: /tmp
 # --------------------------------------------------------------------------------------------------------------------------------------- #
 # Directories
 nomad_installation_dir: /usr/bin

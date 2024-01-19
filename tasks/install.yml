@@ -1,7 +1,13 @@
+- name: Create download directory
+  file:
+    path: "{{ nomad_download_dir }}/{{ nomad_version }}"
+    state: directory
+    recurse: yes
+
 - name: "Download Nomad {{ nomad_version }}"
   get_url: 
     url: "{{ nomad_url }}"
-    dest: "/tmp/nomad_{{ nomad_version }}.zip"
+    dest: "{{ nomad_download_dir }}/{{ nomad_version }}/nomad.zip"
     owner: "{{ nomad_user }}"
     group: "{{ nomad_group }}"
   register: result
@@ -9,15 +15,29 @@
   retries: 5
   delay: 2
 
-- name: "Unarchive Nomad binary and copy to {{ nomad_installation_dir }}"
+- name: "Unarchive Nomad binary"
   unarchive: 
-    src: "/tmp/nomad_{{ nomad_version }}.zip"
-    remote_src: yes 
-    dest: "{{ nomad_installation_dir }}"
-    creates: "{{ nomad_installation_dir }}/nomad"
+    src: "{{ nomad_download_dir }}/{{ nomad_version }}/nomad.zip"
+    dest: "{{ nomad_download_dir }}/{{ nomad_version }}"
+    creates: "{{ nomad_download_dir }}/{{ nomad_version }}/nomad"
     owner: "{{ nomad_user }}"
     group: "{{ nomad_group }}"
+    remote_src: yes
 
+- name: "Copy Nomad binary to {{ nomad_installation_dir }}"
+  copy:
+    src: "{{ nomad_download_dir }}/{{ nomad_version }}/nomad"
+    dest: "{{ nomad_installation_dir }}/nomad_{{ nomad_version }}"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: "Create Nomad symlink"
+  file:
+    src: "{{ nomad_installation_dir }}/nomad_{{ nomad_version }}"
+    dest: "{{ nomad_installation_dir }}/nomad"
+    state: link
+    force: yes
 
 - name: "Create Nomad directories"
   file:
