@@ -6,9 +6,9 @@
     args:
       creates: "{{ nomad_config_dir }}/certs/acl_bootstrap"
     environment:
-      NOMAD_CACERT: /etc/nomad/certs/nomad-agent-ca.pem
-      NOMAD_CLIENT_CERT: /etc/nomad/certs/global-cli-nomad.pem
-      NOMAD_CLIENT_KEY: /etc/nomad/certs/global-cli-nomad-key.pem
+      NOMAD_CACERT: "{{ nomad_config_dir }}/certs/nomad-agent-ca.pem"
+      NOMAD_CLIENT_CERT: "{{ nomad_config_dir }}/certs/global-cli-nomad.pem"
+      NOMAD_CLIENT_KEY: "{{ nomad_config_dir }}/certs/global-cli-nomad-key.pem"
       NOMAD_ADDR: "https://127.0.0.1:4646"
     register: nomad_acl_bootstrap
     until: nomad_acl_bootstrap is success
@@ -21,19 +21,24 @@
       dest: "{{ nomad_config_dir }}/certs/acl_bootstrap"
       force: false
 
-  when: ansible_connection == 'local'
+  - name: Fetch Nomad Bootstrap Token file in ansible-master
+    fetch:
+      src: "{{ nomad_config_dir }}/certs/acl_bootstrap"
+      dest: "{{ nomad_fetch_dir }}/"
+      flat: yes
+
+  when: nomad_master
 
 - name: Wait Bootstrap to be generated
   wait_for:
-    path: "{{ nomad_config_dir }}/certs/acl_bootstrap"
+    path: "{{ nomad_fetch_dir }}/acl_bootstrap"
   delegate_to: localhost
 
 - name: Get Bootstrap Token
   set_fact:
-    NOMAD_TOKEN: "{{ lookup('file', nomad_config_dir + '/certs/acl_bootstrap')| regex_search(regexp,'\\1') | first }}"
+    NOMAD_TOKEN: "{{ lookup('file', nomad_fetch_dir + '/acl_bootstrap')| regex_search(regexp,'\\1') | first }}"
   vars:
     regexp: 'Secret ID\s+=\s+(.*)'
-  delegate_to: localhost
 
 - name: nomad_secret_id
   debug:

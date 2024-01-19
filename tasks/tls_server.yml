@@ -1,0 +1,13 @@
+---
+# Generate Server Cert
+- name: Create Nomad TLS Server Cert
+  command: nomad tls cert create -server -cluster-region {{ nomad_region }} -additional-dnsname={{ tls_dns_name }} -additional-ipaddress={{ tls_private_ip }} -additional-ipaddress={{ tls_public_ip }} -ca {{ nomad_config_dir }}/certs/nomad-agent-ca.pem -key {{ nomad_config_dir }}/certs/nomad-agent-ca-key.pem
+  args:
+    chdir: "{{ nomad_config_dir }}/certs/"
+    creates: "{{ nomad_config_dir }}/certs/{{ nomad_region }}-server-nomad.pem"
+  become_user: "{{ nomad_user }}"
+
+- name: Set cert files
+  set_fact:
+    tls_cert_file: "{{ nomad_config_dir }}/certs/{{ nomad_region }}-server-nomad.pem"
+    tls_key_file: "{{ nomad_config_dir }}/certs/{{ nomad_region }}-server-nomad-key.pem"

@@ -4,6 +4,11 @@ nomad_version: 1.5.6
 nomad_user: nomad
 nomad_group: nomad
 create_nomad_service: true
+# Boolean value to identify to consul master
+# Default value is True if ansible_connection is local (IM usecase)
+nomad_master: "{% if (ansible_connection == 'local') %}True{% else %}False{% endif %}"
+# Nomad fetch dir at ansible host
+nomad_fetch_dir: /opt/consul
 nomad_download_dir: /tmp
 # --------------------------------------------------------------------------------------------------------------------------------------- #
 # Directories

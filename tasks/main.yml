@@ -1,29 +1,42 @@
 ---
 - name: "Checks system"
-  include: checks.yml
+  include_tasks: checks.yml
 
 - name: "Create facts"
   set_fact: 
     nomad_hostname: "{{ ansible_hostname }}"
 
 - name: "Creating user and group"
-  include: create_user.yml
+  include_tasks: create_user.yml
 
 - name: "Install role requeriments"
-  include: requeriments.yml
+  include_tasks: requeriments.yml
 
 - name: "Install Nomad"
-  include: install.yml
+  include_tasks: install.yml
 
 - name: Configure TLS
-  include: tls.yml
+  block:
+  # Generate CA Cert
+  - include_tasks: tls_ca.yml
+
+  # Generate CLI Cert
+  - include_tasks: tls_cli.yml
+
+  # Generate Server Cert
+  - include_tasks: tls_server.yml
+    when: server_enabled
+
+  # Generate Client Cert
+  - include_tasks: tls_client.yml
+    when: client_enabled
   when: use_tls and generate_tls
 
 - name: "Configure Nomad"
-  include: configure.yml
+  include_tasks: configure.yml
 
 - name: "Create Nomad service"  
-  include: include_services.yml
+  include_tasks: services.yml
   when: create_nomad_service
 
 - name: Start Nomad using Linux services

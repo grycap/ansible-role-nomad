@@ -1,19 +1,17 @@
 galaxy_info:
-  author: serlohu@upv.es, amcaar@i3m.upv.es
-  description: Installs Nomad
-  company: GRyCAP UPV
-  license: Apache 
-  min_ansible_version: 2.0
-
+  namespace: micafer
+  role_name: nomad
+  author: micafer1@upv.es
+  description: Install and configure Hashicorp Nomad
+  company: GRyCAP
+  license: Apache
+  min_ansible_version: "2.2"
   platforms:
   - name: EL
     versions:
-    - 7
+    - "8"
+    - "9"
   - name: Ubuntu
-  versions:
-  - xenial  
-  galaxy_tags:
-    - nomad
-    - hashicorp
-
-dependencies: []   
+    versions:
+    - bionic
+    - jammy
