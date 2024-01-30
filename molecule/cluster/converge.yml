@@ -32,3 +32,4 @@
         server_bootstrap_expect: 2
         acl_enabled: true
         acl_bootstrap: true
+        nvidia_plugin_enabled: true
