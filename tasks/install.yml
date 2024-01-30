@@ -35,3 +35,7 @@
     owner: root
     group: root
     mode: 0755
+
+- name: Install NVIDIA plugin
+  include_tasks: nvidia_plugin.yml
+  when: nvidia_plugin_enabled

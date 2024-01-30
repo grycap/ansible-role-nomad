@@ -207,3 +207,8 @@ sentinel_imports:
 # START - Sentinel configuration
 
 nomad_plugins: {}
+
+# NVIDIA plugin
+nvidia_plugin_enabled: false
+nvidia_plugin_version: 1.0.0
+nvidia_plugin_url: https://releases.hashicorp.com/nomad-device-nvidia/{{ nvidia_plugin_version }}/nomad-device-nvidia_{{ nvidia_plugin_version }}_linux_amd64.zip

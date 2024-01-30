@@ -1,0 +1,26 @@
+- name: "Download Nvidia plugin"
+  get_url: 
+    url: "{{ nvidia_plugin_url }}"
+    dest: "{{ nomad_data_dir }}"
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+  register: result
+  until: result is success
+  retries: 5
+  delay: 2
+
+- name: "Create plugins directory"
+  file:
+    dest: "{{ nomad_data_dir }}/plugins"
+    state: directory
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+
+- name: "Unarchive Nomad plugin and copy to plugins directory"
+  unarchive: 
+    src: "{{ nomad_data_dir }}/nomad-device-nvidia_1.0.0_linux_amd64.zip"
+    remote_src: yes 
+    dest: "{{ nomad_data_dir }}/plugins"
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    creates: "{{ nomad_data_dir }}/plugins/nomad-device-nvidia"
