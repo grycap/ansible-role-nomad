@@ -5,9 +5,32 @@
 
   tasks:
 
-    - name: Test
-      command: nomad node status
+    - name: Wait for Nomad to be ready
+      wait_for:
+        port: 4646
+        timeout: 60
+
+    - name: Test servers
+      shell: export $(cat /etc/environment | xargs) && nomad server members
+      register: servers
+      changed_when: false
+
+    - debug:
+        var: servers.stdout
+
+    - name: Check service running
+      assert:
+        that:
+          - "'server0' in servers.stdout"
+          - "'server1' in servers.stdout"
+          - "'alive' in servers.stdout"
+        fail_msg: "Error getting servers"
+        success_msg: "Nomad servers up and running"
+
+    - name: Test clients
+      shell: export $(cat /etc/environment | xargs) && nomad node status
       register: nodes
+      changed_when: false
 
     - debug:
         var: nodes.stdout
@@ -15,9 +38,8 @@
     - name: Check service running
       assert:
         that:
-          - "'server0' in nodes.stdout"
-          - "'server1' in nodes.stdout"
           - "'vnode-1' in nodes.stdout"
+          - "'ready' in nodes.stdout"
         fail_msg: "Error getting nodes"
-        success_msg: "Nomad installed and running"
+        success_msg: "Nomad nodes up and running"
 

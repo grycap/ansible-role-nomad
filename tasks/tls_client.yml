@@ -3,8 +3,8 @@
 - name: Create Nomad TLS client Cert
   command: nomad tls cert create -client -additional-dnsname={{ tls_dns_name }} -additional-ipaddress={{ tls_private_ip }} -additional-ipaddress={{ tls_public_ip }} -ca {{ nomad_config_dir }}/certs/nomad-agent-ca.pem -key {{ nomad_config_dir }}/certs/nomad-agent-ca-key.pem
   args:
-    chdir: "{{ nomad_config_dir }}/certs/{{ ansible_hostname }}"
-    creates: "{{ nomad_config_dir }}/certs/{{ ansible_hostname }}/global-client-nomad.pem"
+    chdir: "{{ nomad_config_dir }}/certs/"
+    creates: "{{ nomad_config_dir }}/certs/global-client-nomad.pem"
   become_user: "{{ nomad_user }}"
 
 - name: Set cert files
