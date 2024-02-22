@@ -213,3 +213,6 @@ nomad_plugins: {}
 nvidia_plugin_enabled: false
 nvidia_plugin_version: 1.0.0
 nvidia_plugin_url: https://releases.hashicorp.com/nomad-device-nvidia/{{ nvidia_plugin_version }}/nomad-device-nvidia_{{ nvidia_plugin_version }}_linux_amd64.zip
+
+# CNI plugin
+nomad_install_cni: false
