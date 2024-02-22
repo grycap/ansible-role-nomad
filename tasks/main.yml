@@ -58,3 +58,7 @@
 - name: Get/Gen Bootstrap token
   include_tasks: acl.yml
   when: acl_enabled and acl_bootstrap
+
+- name: Install CNI plugin
+  include_tasks: install_cni.yml
+  when: nomad_install_cni
