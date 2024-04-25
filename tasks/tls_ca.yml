@@ -33,7 +33,6 @@
   when: nomad_master
   loop:
   - "nomad-agent-ca.pem"
-  - "nomad-agent-ca-key.pem"
 
 - name: Wait CA Cert to be generated
   wait_for:
@@ -46,7 +45,6 @@
     dest: "{{ nomad_config_dir }}/certs/{{ item }}"
   loop:
   - "nomad-agent-ca.pem"
-  - "nomad-agent-ca-key.pem"
 
 - name: Set CA file
   set_fact:
