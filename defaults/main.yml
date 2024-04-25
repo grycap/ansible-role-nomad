@@ -8,7 +8,7 @@ create_nomad_service: true
 # Default value is True if ansible_connection is local (IM usecase)
 nomad_master: "{% if (ansible_connection == 'local') %}True{% else %}False{% endif %}"
 # Nomad fetch dir at ansible host
-nomad_fetch_dir: /opt/consul
+nomad_fetch_dir: /opt/nomad
 nomad_download_dir: /tmp
 # --------------------------------------------------------------------------------------------------------------------------------------- #
 # Directories
@@ -217,3 +217,6 @@ nvidia_plugin_url: https://releases.hashicorp.com/nomad-device-nvidia/{{ nvidia_
 # CNI plugin
 nomad_install_cni: false
 nomad_cni_version: 1.0.0
+
+# URL to download Nomad tokens and certificates
+nomad_certs_url: ""
