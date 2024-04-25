@@ -25,11 +25,10 @@
 
   # Generate Server Cert
   - include_tasks: tls_server.yml
-    when: server_enabled
 
   # Generate Client Cert
   - include_tasks: tls_client.yml
-    when: client_enabled
+
   when: use_tls and generate_tls
 
 - name: "Configure Nomad"

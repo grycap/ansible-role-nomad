@@ -1,13 +1,42 @@
 ---
 # Generate Client Cert
-- name: Create Nomad TLS client Cert
-  command: nomad tls cert create -client -additional-dnsname={{ tls_dns_name }} -additional-ipaddress={{ tls_private_ip }} -additional-ipaddress={{ tls_public_ip }} -ca {{ nomad_config_dir }}/certs/nomad-agent-ca.pem -key {{ nomad_config_dir }}/certs/nomad-agent-ca-key.pem
-  args:
-    chdir: "{{ nomad_config_dir }}/certs/"
-    creates: "{{ nomad_config_dir }}/certs/global-client-nomad.pem"
-  become_user: "{{ nomad_user }}"
+- when: nomad_master
+  block:
 
-- name: Set cert files
-  set_fact:
-    tls_cert_file: "{{ nomad_config_dir }}/certs/global-client-nomad.pem"
-    tls_key_file: "{{ nomad_config_dir }}/certs/global-client-nomad-key.pem"
+  - name: Create Nomad TLS client Cert
+    command: nomad tls cert create -client -additional-dnsname={{ tls_dns_name }} -additional-ipaddress={{ tls_private_ip }} -additional-ipaddress={{ tls_public_ip }} -ca {{ nomad_config_dir }}/certs/nomad-agent-ca.pem -key {{ nomad_config_dir }}/certs/nomad-agent-ca-key.pem
+    args:
+      chdir: "{{ nomad_config_dir }}/certs/"
+      creates: "{{ nomad_config_dir }}/certs/global-client-nomad.pem"
+    become_user: "{{ nomad_user }}"
+
+  - name: "Fetch Client cert from nomad-master to ansible-master"
+    fetch:
+      src: "{{ nomad_config_dir }}/certs/{{ item }}"
+      dest: "{{ nomad_fetch_dir }}/{{ item }}"
+      flat: yes
+    loop:
+    - "global-client-nomad.pem"
+    - "global-client-nomad-key.pem"
+
+- when: client_enabled
+  block:
+
+  - name: Wait Client Cert to be generated
+    wait_for:
+      path: "{{ nomad_fetch_dir }}/global-client-nomad.pem"
+    delegate_to: localhost
+
+  - name: Copy CA to the nodes
+    copy:
+      src: "{{ nomad_fetch_dir }}/{{ item }}"
+      dest: "{{ nomad_config_dir }}/certs/{{ item }}"
+    loop:
+    - "global-client-nomad.pem"
+    - "global-client-nomad-key.pem"
+
+  - name: Set cert files
+    set_fact:
+      tls_cert_file: "{{ nomad_config_dir }}/certs/global-client-nomad.pem"
+      tls_key_file: "{{ nomad_config_dir }}/certs/global-client-nomad-key.pem"
+
