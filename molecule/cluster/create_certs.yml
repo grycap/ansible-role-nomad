@@ -1,0 +1,49 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+
+  tasks:
+
+  - set_fact:
+      nomad_master_node: "{{ nomad_master }}"
+
+  - when: nomad_master_node
+    block:
+
+      - include_vars: "../../defaults/main.yml"
+
+      - name: Create Consul TLS Server Certs for new servers
+        command: consul tls cert create -server -dc {{ consul_dc_name }} -domain {{ consul_domain }} 
+        args:
+          chdir: "{{ consul_config_dir }}/certs"
+          creates: "{{ consul_config_dir }}/certs/{{ consul_dc_name }}-server-{{ consul_domain }}-{{ item }}.pem"
+        loop: "{{ range(0, 3)|list }}"
+        become_user: "{{ consul_user }}"
+        register: consul_tls_server_certs
+
+      - name: Zip Consul Certs
+        archive:
+          path:
+            - "{{ consul_config_dir }}/certs/"
+            - "{{ consul_config_dir }}/policies/*.token"
+            - "{{ consul_config_dir }}/encrypt.key"
+          dest: "/tmp/consul_certs.zip"
+        when: consul_tls_server_certs.changed
+
+      - name: "Fetch zip cert from consul-master to ansible-master"
+        fetch:
+          src: "/tmp/consul_certs.zip"
+          dest: "/tmp/consul_certs.zip"
+          flat: yes
+        when: consul_tls_server_certs.changed
+
+  - name: Wait Zip Certs to be generated
+    wait_for:
+      path: "/tmp/consul_certs.zip"
+    delegate_to: localhost
+
+  - name: Copy Zip Certs to each node
+    copy:
+      src: "/tmp/consul_certs.zip"
+      dest: "/tmp/consul_certs.zip"

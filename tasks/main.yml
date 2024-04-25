@@ -15,6 +15,10 @@
 - name: "Install Nomad"
   include_tasks: install.yml
 
+- name: "Get Certs from URL"
+  include_tasks: download_certs.yml
+  when: nomad_certs_url != ""
+
 - name: Configure TLS
   block:
   # Generate CA Cert
@@ -30,7 +34,7 @@
   # Generate Client Cert
   - include_tasks: tls_client.yml
     when: client_enabled
-  when: use_tls and generate_tls
+  when: use_tls and generate_tls and nomad_certs_url == ""
 
 - name: "Configure Nomad"
   include_tasks: configure.yml
@@ -57,7 +61,7 @@
 
 - name: Get/Gen Bootstrap token
   include_tasks: acl.yml
-  when: acl_enabled and acl_bootstrap
+  when: acl_enabled and acl_bootstrap and nomad_certs_url == ""
 
 - name: Install CNI plugin
   include_tasks: install_cni.yml
