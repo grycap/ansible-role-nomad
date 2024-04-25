@@ -12,7 +12,7 @@
         consul_config_dir: "/etc/consul"
         consul_dns: false
         consul_join_ips: "{{ groups['front'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | list }}"
-        consul_certs_url: "file:///tmp/nomad_certs.zip"
+        consul_certs_url: "file:///tmp/consul_certs.zip"
 
 
     - name: "Include grycap.nomad"

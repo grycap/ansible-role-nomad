@@ -8,10 +8,14 @@
   - set_fact:
       nomad_master_node: "{{ nomad_master }}"
 
-  - when: nomad_master_node
+  - when: consul_master
     block:
 
-      - include_vars: "../../defaults/main.yml"
+      - set_fact:
+          consul_config_dir: "/etc/consul"
+          consul_dc_name: "dc1"
+          consul_domain: "consul"
+          consul_user: "consul"
 
       - name: Create Consul TLS Server Certs for new servers
         command: consul tls cert create -server -dc {{ consul_dc_name }} -domain {{ consul_domain }} 
@@ -47,3 +51,37 @@
     copy:
       src: "/tmp/consul_certs.zip"
       dest: "/tmp/consul_certs.zip"
+
+  - when: nomad_master_node
+    block:
+
+      - include_vars: "../../defaults/main.yml"
+
+      - name: Zip Nomad Certs
+        archive:
+          path:
+            - "{{ nomad_config_dir }}/certs/*"
+          exclude_path:
+            - "{{ nomad_config_dir }}/certs/nomad-agent-ca-key.pem"
+          dest: "/tmp/nomad_certs.zip"
+        register: nomad_certs_zip
+
+      - name: "Fetch zip cert from nomad-master to ansible-master"
+        fetch:
+          src: "/tmp/nomad_certs.zip"
+          dest: "/tmp/nomad_certs.zip"
+          flat: yes
+        when: nomad_certs_zip.changed
+
+  - when: ("new" in groups and inventory_hostname in groups["new"])
+    block:
+
+    - name: Wait Zip Certs to be generated
+      wait_for:
+        path: "/tmp/nomad_certs.zip"
+      delegate_to: localhost
+
+    - name: Copy Zip Certs to each node
+      copy:
+        src: "/tmp/nomad_certs.zip"
+        dest: "/tmp/nomad_certs.zip"

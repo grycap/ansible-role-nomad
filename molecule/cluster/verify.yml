@@ -23,6 +23,7 @@
         that:
           - "'server0' in servers.stdout"
           - "'server1' in servers.stdout"
+          - "'servernew0' in servers.stdout"
           - "'alive' in servers.stdout"
         fail_msg: "Error getting servers"
         success_msg: "Nomad servers up and running"
@@ -39,6 +40,7 @@
       assert:
         that:
           - "'vnode-1' in nodes.stdout"
+          - "'vnodenew-1' in nodes.stdout"
           - "'ready' in nodes.stdout"
         fail_msg: "Error getting nodes"
         success_msg: "Nomad nodes up and running"

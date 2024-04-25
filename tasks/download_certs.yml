@@ -2,23 +2,27 @@
 # Create certs directory
 - name: Create Nomad TLS directory
   file:
-    path: "{{ nomad_config_dir }}/certs"
+    path: "{{ item }}/certs"
     owner: "{{ nomad_user }}"
     group: "{{ nomad_group }}"
     mode: 0755
     state: directory
+  loop:
+  - "{{ nomad_fetch_dir }}"
+  - "{{ nomad_config_dir }}"
 
-  - name: Donwload Certs
-    get_url:
-      url: "{{ nomad_certs_url }}"
-      dest: "{{ nomad_fetch_dir }}/certs.zip"
-      force: no
+- name: Donwload Certs
+  get_url:
+    url: "{{ nomad_certs_url }}"
+    dest: "{{ nomad_fetch_dir }}/certs.zip"
+    force: no
 
-  - name: Unzip Certs
-    unarchive:
-      src: "{{ nomad_fetch_dir }}/certs.zip"
-      dest: "{{ nomad_config_dir }}"
-      remote_src: yes
+- name: Unzip Certs
+  unarchive:
+    src: "{{ nomad_fetch_dir }}/certs.zip"
+    dest: "{{ nomad_config_dir }}/certs"
+    creates: "{{ nomad_config_dir }}/certs/nomad-agent-ca.pem"
+    remote_src: yes
 
 - name: Set CA file
   set_fact:
