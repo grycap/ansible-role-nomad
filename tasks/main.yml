@@ -6,26 +6,26 @@
 
 - block:
     - name: "Checks system"
-      include: checks.yml
+      include_tasks: checks.yml
 
     - name: "Create facts"
       set_fact: 
         nomad_hostname: "{{ ansible_hostname }}"
 
     - name: "Creating user and group"
-      include: create_user.yml
+      include_tasks: create_user.yml
     
     - name: "Install role requeriments"
-      include: requeriments.yml
+      include_tasks: requeriments.yml
 
     - name: "Install Nomad"
-      include: install.yml
+      include_tasks: install.yml
 
     - name: "Configure Nomad"
-      include: configure.yml
+      include_tasks: configure.yml
 
     - name: "Create Nomad service"  
-      include: include_services.yml
+      include_tasks: include_services.yml
       when: create_nomad_service
 
     - name: Start Nomad using Linux services
