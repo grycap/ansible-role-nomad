@@ -1,0 +1,39 @@
+---
+- name: Converge
+  hosts: new
+  become: true
+
+  tasks:
+    - name: "Include grycap.consul"
+      include_role:
+        name: "grycap.consul"
+      vars:
+        consul_version: "1.17.1"
+        consul_config_dir: "/etc/consul"
+        consul_dns: false
+        consul_join_ips: "{{ groups['front_init'] | map('extract', hostvars, ['ansible_default_ipv4', 'address']) | list }}"
+        consul_certs_url: "file:///tmp/consul_certs.zip"
+
+
+    - name: "Include grycap.nomad"
+      include_role:
+        name: "ansible-role-nomad"
+      vars:
+        nomad_version: "1.7.3"
+        use_tls: true
+        tls_http: true
+        tls_rpc: true
+        generate_tls: true
+        bind_address: "0.0.0.0"
+        use_consul: true
+        consul_verify_ssl: false
+        consul_ca_file: "/etc/consul/certs/consul-agent-ca.pem"
+        create_nomad_service: true
+        consul_ACL_token_set: true
+        consul_token: "{{ consul_tokens['nomad-server-policy'] }}"
+        server_bootstrap_expect: 2
+        acl_enabled: true
+        acl_bootstrap: true
+        nvidia_plugin_enabled: true
+        nomad_install_cni: true
+        nomad_certs_url: "file:///tmp/nomad_certs.zip"

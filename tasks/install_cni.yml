@@ -1,0 +1,30 @@
+- name: Create /opt/cni/bin
+  file:
+    path: /opt/cni/bin
+    state: directory
+    recurse: yes
+
+- name: install CNI plugins
+  unarchive:
+    src: https://github.com/containernetworking/plugins/releases/download/v{{nomad_cni_version}}/cni-plugins-linux-amd64-v{{nomad_cni_version}}.tgz
+    dest: /opt/cni/bin
+    remote_src: yes
+    creates: /opt/cni/binbridge
+
+- name: Create /etc/sysctl.d
+  file:
+    path: /etc/sysctl.d/
+    state: directory
+
+- name: Create /etc/sysctl.d/99-nomad-cni.conf
+  register: cni_sysctl
+  copy:
+    content: |
+      net.bridge.bridge-nf-call-arptables = 1
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.bridge.bridge-nf-call-iptables  = 1
+    dest: /etc/sysctl.d/99-nomad-cni.conf
+
+- name: Apply sysctl params
+  command: sysctl --system
+  when: cni_sysctl is changed

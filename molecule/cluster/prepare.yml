@@ -1,0 +1,20 @@
+---
+- name: Prepare
+  hosts: all
+  gather_facts: true
+
+  pre_tasks:
+    - name: Update cache on Debian
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Install crontabs on RedHat
+      package:
+        name:
+        - crontabs
+        - cronie
+      when: ansible_os_family == "RedHat"
+
+  roles:
+    - role: kevincoakley.facter

@@ -1,0 +1,56 @@
+---
+# Create certs directory
+- name: Create Nomad TLS directory
+  file:
+    path: "{{ nomad_config_dir }}/certs"
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: 0755
+    state: directory
+
+- name: Create Nomad fetch directory
+  file:
+    path: "{{ nomad_fetch_dir }}"
+    state: directory
+    owner: "{{ lookup('env', 'USER') }}"
+    mode: 0755
+  delegate_to: localhost
+
+# Generate CA Cert
+- name: Create Nomad TLS CA
+  command: nomad tls ca create
+  args:
+    chdir: "{{ nomad_config_dir }}/certs"
+    creates: "{{ nomad_config_dir }}/certs/nomad-agent-ca.pem"
+  become_user: "{{ nomad_user }}"
+  when: nomad_master
+
+- name: "Fetch CA cert from nomad-master to ansible-master"
+  fetch:
+    src: "{{ nomad_config_dir }}/certs/{{ item }}"
+    dest: "{{ nomad_fetch_dir }}/{{ item }}"
+    flat: yes
+  when: nomad_master
+  loop:
+  - "nomad-agent-ca.pem"
+
+- name: Wait CA Cert to be generated
+  wait_for:
+    path: "{{ nomad_fetch_dir }}/nomad-agent-ca.pem"
+  delegate_to: localhost
+
+- name: Copy CA to the nodes
+  copy:
+    src: "{{ nomad_fetch_dir }}/{{ item }}"
+    dest: "{{ nomad_config_dir }}/certs/{{ item }}"
+  loop:
+  - "nomad-agent-ca.pem"
+
+- name: Set CA file
+  set_fact:
+    tls_ca_file: "{{ nomad_config_dir }}/certs/nomad-agent-ca.pem"
+
+- name: Set NOMAD_CACERT environment variable
+  lineinfile:
+    dest: /etc/environment
+    line: "NOMAD_CACERT={{ tls_ca_file }}"

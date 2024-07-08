@@ -1,42 +1,67 @@
 ---
-- name: Checking is nomad is installed
-  command: nomad --version
-  register: nomad_output
-  ignore_errors: True
+- name: "Checks system"
+  include_tasks: checks.yml
 
-- block:
-    - name: "Checks system"
-      include_tasks: checks.yml
+- name: "Create facts"
+  set_fact: 
+    nomad_hostname: "{{ ansible_hostname }}"
 
-    - name: "Create facts"
-      set_fact: 
-        nomad_hostname: "{{ ansible_hostname }}"
+- name: "Creating user and group"
+  include_tasks: create_user.yml
 
-    - name: "Creating user and group"
-      include_tasks: create_user.yml
-    
-    - name: "Install role requeriments"
-      include_tasks: requeriments.yml
+- name: "Install role requeriments"
+  include_tasks: requeriments.yml
 
-    - name: "Install Nomad"
-      include_tasks: install.yml
+- name: "Install Nomad"
+  include_tasks: install.yml
 
-    - name: "Configure Nomad"
-      include_tasks: configure.yml
+- name: "Get Certs from URL"
+  include_tasks: download_certs.yml
+  when: nomad_certs_url != ""
 
-    - name: "Create Nomad service"  
-      include_tasks: include_services.yml
-      when: create_nomad_service
+- name: Configure TLS
+  block:
+  # Generate CA Cert
+  - include_tasks: tls_ca.yml
 
-    - name: Start Nomad using Linux services
-      service:
-        name: nomad
-        enabled: yes
-        state: started
-      when: create_nomad_service
+  # Generate CLI Cert
+  - include_tasks: tls_cli.yml
 
-    - name: Start Nomad using nomad daemon
-      shell: "su - {{ nomad_user }} -c '{{ nomad_installation_dir }}/nomad agent -config={{ nomad_config_dir }} >{{ nomad_log_dir }}/nomad.log 2>{{ nomad_log_dir }}/nomad.error.log &'"  
-      when: not create_nomad_service  
-    
-  when: nomad_output is failed
+  # Generate Server Cert
+  - include_tasks: tls_server.yml
+
+  # Generate Client Cert
+  - include_tasks: tls_client.yml
+
+  when: use_tls and generate_tls and nomad_certs_url == ""
+
+- name: "Configure Nomad"
+  include_tasks: configure.yml
+
+- name: "Create Nomad service"  
+  include_tasks: services.yml
+  when: create_nomad_service
+
+- name: Start Nomad using Linux services
+  service:
+    name: nomad
+    enabled: yes
+    state: started
+  when: create_nomad_service
+
+- name: Start Nomad using nomad daemon
+  shell: "su - {{ nomad_user }} -c '{{ nomad_installation_dir }}/nomad agent -config={{ nomad_config_dir }} >{{ nomad_log_dir }}/nomad.log 2>{{ nomad_log_dir }}/nomad.error.log &'"  
+  when: not create_nomad_service  
+
+- name: Set NOMAD_ADDR environment variable
+  lineinfile:
+    dest: /etc/environment
+    line: "NOMAD_ADDR=https://127.0.0.1:4646"
+
+- name: Get/Gen Bootstrap token
+  include_tasks: acl.yml
+  when: acl_enabled and acl_bootstrap and nomad_certs_url == ""
+
+- name: Install CNI plugin
+  include_tasks: install_cni.yml
+  when: nomad_install_cni

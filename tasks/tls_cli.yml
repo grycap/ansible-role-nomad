@@ -1,0 +1,43 @@
+---
+# Generate CLI Cert
+- when: nomad_master
+  block:
+
+  - name: Create Nomad TLS CLI Cert
+    command: nomad tls cert create -cli
+    args:
+      chdir: "{{ nomad_config_dir }}/certs"
+      creates: "{{ nomad_config_dir }}/certs/global-cli-nomad.pem"
+    become_user: "{{ nomad_user }}"
+
+  - name: "Fetch CLI cert from nomad-master to ansible-master"
+    fetch:
+      src: "{{ nomad_config_dir }}/certs/{{ item }}"
+      dest: "{{ nomad_fetch_dir }}/{{ item }}"
+      flat: yes
+    loop:
+    - "global-cli-nomad.pem"
+    - "global-cli-nomad-key.pem"
+
+- name: Wait CLI Cert to be generated
+  wait_for:
+    path: "{{ nomad_fetch_dir }}/global-cli-nomad-key.pem"
+  delegate_to: localhost
+
+- name: Copy CLI Cert to the nodes
+  copy:
+    src: "{{ nomad_fetch_dir }}/{{ item }}"
+    dest: "{{ nomad_config_dir }}/certs/{{ item }}"
+  loop:
+  - "global-cli-nomad.pem"
+  - "global-cli-nomad-key.pem"
+
+- name: Set NOMAD_CLIENT_CERT environment variable
+  lineinfile:
+    dest: /etc/environment
+    line: "NOMAD_CLIENT_CERT={{ nomad_config_dir }}/certs/global-cli-nomad.pem"
+
+- name: Set NOMAD_CLIENT_KEY environment variable
+  lineinfile:
+    dest: /etc/environment
+    line: "NOMAD_CLIENT_KEY={{ nomad_config_dir }}/certs/global-cli-nomad-key.pem"

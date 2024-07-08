@@ -1,22 +1,46 @@
 server {
 
     enabled = {{ server_enabled | bool | lower }}
-    authoritative_region = "{{ server_authoritative_region }}"
     {% if server_enabled | bool -%}
         bootstrap_expect = {{ server_bootstrap_expect }}
     {%- endif %}
 
+{% if server_authoritative_region != "" %}
+    authoritative_region = "{{ server_authoritative_region }}"
+{% endif %}
+{% if server_nomad_data_dir != "" %}
     data_dir = "{{ server_nomad_data_dir }}"
+{% endif %}
+{% if server_enabled_schedulers != [] %}
     enabled_schedulers = [{% for scheduler in server_enabled_schedulers -%} "{{ scheduler }}"{% if not loop.last %},{% endif %} {%- endfor -%} ]
+{% endif %}
+{% if server_encrypt != "" %}
     encrypt = "{{ server_encrypt }}"
+{% endif %}
+{% if server_node_gc_threshold != "" %}
     node_gc_threshold = "{{ server_node_gc_threshold }}"
+{% endif %}
+{% if server_job_gc_threshold != "" %}
     job_gc_threshold = "{{ server_job_gc_threshold }}"
+{% endif %}
+{% if server_eval_gc_threshold != "" %}
     eval_gc_threshold = "{{ server_eval_gc_threshold }}"
+{% endif %}
+{% if server_deployment_gc_threshold != "" %}
     deployment_gc_threshold = "{{ server_deployment_gc_threshold }}"
+{% endif %}
+{% if server_heartbeat_grace != "" %}
     heartbeat_grace = "{{ server_heartbeat_grace }}"
+{% endif %}
+{% if server_min_heartbeat_ttl != "" %}
     min_heartbeat_ttl = "{{ server_min_heartbeat_ttl }}"
+{% endif %}
+{% if server_max_heartbeats_per_second != -1 %}
     max_heartbeats_per_second = {{ server_max_heartbeats_per_second }}
+{% endif %}
+{% if server_num_schedulers != -1 %}
     num_schedulers = {{ server_num_schedulers }}
+{% endif %}
     rejoin_after_leave = {{ server_rejoin_after_leave | bool | lower }}
 
 {% if use_consul == False %}
